@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func InsertRecord(db *sql.DB, MobileNumber string, FN string, LN string, Email string) {
-	query := fmt.Sprintf("INSERT INTO Passengers (MobileNumber, FirstName, LastName, EmailAddress) VALUES (%s, '%s', '%s', %s)",
+func InsertRecord(db *sql.DB, FN string, LN string, MobileNumber string, Email string) {
+	query := fmt.Sprintf("INSERT INTO Passengers (FirstName, LastName,MobileNumber, EmailAddress) VALUES (%s, '%s', '%s', %s)",
 		MobileNumber, FN, LN, Email)
 
 	_, err := db.Query(query)
@@ -16,7 +16,7 @@ func InsertRecord(db *sql.DB, MobileNumber string, FN string, LN string, Email s
 	}
 }
 
-func EditRecord(db *sql.DB, ID string, MobileNumber string, FN string, LN string, Email string) {
+func EditRecord(db *sql.DB, ID string, FN string, LN string, MobileNumber string, Email string) {
 	query := fmt.Sprintf(
 		"UPDATE Passengers SET FirstName='%s', LastName='%s', Email=%s, MobileNumber=%s WHERE ID = '%s",
 		FN, LN, Email, MobileNumber, ID)

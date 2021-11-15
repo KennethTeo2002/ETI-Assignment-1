@@ -1,7 +1,10 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"database/sql"
+=======
+>>>>>>> 6515637c3a847943da9ec82e57869eb3153fb4d9
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -43,6 +46,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("401 - Invalid key"))
 		return
 	}
+<<<<<<< HEAD
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/my_db")
 
 	// handle error
@@ -51,6 +55,8 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println("Database opened")
 	}
+=======
+>>>>>>> 6515637c3a847943da9ec82e57869eb3153fb4d9
 
 	params := mux.Vars(r)
 
@@ -93,7 +99,8 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 				// check if course exists; add only if
 				// course does not exist
 				if _, ok := passengers[params["passengerID"]]; !ok {
-					InsertRecord(db, newpassenger.Mobilenumber, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Email)
+					InsertRecord(db, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+					passengers[params["passengerID"]] = newpassenger
 					w.WriteHeader(http.StatusCreated)
 					w.Write([]byte("201 - passenger added: " +
 						params["passengerID"]))
