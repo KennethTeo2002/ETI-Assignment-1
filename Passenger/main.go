@@ -1,20 +1,19 @@
 package main
 
 import (
-<<<<<<< HEAD
 	"database/sql"
-=======
->>>>>>> 6515637c3a847943da9ec82e57869eb3153fb4d9
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
 type passengerInfo struct {
+	Id           string
 	Firstname    string
 	Lastname     string
 	Mobilenumber string
@@ -23,6 +22,7 @@ type passengerInfo struct {
 
 var passengers map[string]passengerInfo
 
+/*
 func validKey(r *http.Request) bool {
 	v := r.URL.Query()
 	if key, ok := v["key"]; ok {
@@ -35,19 +35,19 @@ func validKey(r *http.Request) bool {
 		return false
 	}
 }
+*/
 
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the REST API!")
 }
 
 func passenger(w http.ResponseWriter, r *http.Request) {
-	if !validKey(r) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("401 - Invalid key"))
-		return
-	}
-<<<<<<< HEAD
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/my_db")
+	// if !validKey(r) {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	w.Write([]byte("401 - Invalid key"))
+	// 	return
+	// }
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/passenger_db")
 
 	// handle error
 	if err != nil {
@@ -55,8 +55,6 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println("Database opened")
 	}
-=======
->>>>>>> 6515637c3a847943da9ec82e57869eb3153fb4d9
 
 	params := mux.Vars(r)
 
@@ -65,6 +63,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, r.Method)
 
 	if r.Method == "GET" {
+		GetRecords(db, params["passengerID"])
 		if _, ok := passengers[params["passengerID"]]; ok {
 			json.NewEncoder(w).Encode(
 				passengers[params["passengerID"]])
