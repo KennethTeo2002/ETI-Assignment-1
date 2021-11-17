@@ -58,15 +58,10 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	fmt.Fprintf(w, "Detail for passenger "+params["passengerID"])
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, r.Method)
-
 	if r.Method == "GET" {
-		GetRecords(db, params["passengerID"])
-		if _, ok := passengers[params["passengerID"]]; ok {
-			json.NewEncoder(w).Encode(
-				passengers[params["passengerID"]])
+		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
+			json.NewEncoder(w).Encode(passenger)
+
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("404 - No passenger found"))
@@ -81,7 +76,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			json.Unmarshal(reqBody, &newpassenger)
 			// Check if JSON missing any values
 			missingValues := newpassenger.Firstname == "" || newpassenger.Lastname == "" || newpassenger.Mobilenumber == "" || newpassenger.Email == ""
-			if missingValues == true {
+			if missingValues {
 				w.WriteHeader(
 					http.StatusUnprocessableEntity)
 				w.Write([]byte(
@@ -107,18 +102,15 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			//---PUT is for creating or updating
 			// existing passenger---
 			if r.Method == "PUT" {
-				if _, ok := passengers[params["passengerID"]]; !ok {
+
+				if _, ok := GetRecords(db, params["passengerID"]); !ok {
 					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
-					w.WriteHeader(http.StatusCreated)
-					w.Write([]byte("201 - passenger added: " +
-						params["passengerID"]))
 				} else {
 					// update passenger
+					fmt.Println("updatiing")
 					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
-					w.WriteHeader(http.StatusAccepted)
-					w.Write([]byte("202 - passenger updated: " +
-						params["passengerID"]))
+
 				}
 			}
 

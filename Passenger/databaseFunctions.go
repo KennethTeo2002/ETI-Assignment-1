@@ -18,7 +18,7 @@ func InsertRecord(db *sql.DB, ID string, FN string, LN string, MobileNumber stri
 
 func EditRecord(db *sql.DB, ID string, FN string, LN string, MobileNumber string, Email string) {
 	query := fmt.Sprintf(
-		"UPDATE Passengers SET FirstName='%s', LastName='%s', MobileNumber='%s', Email='%s' WHERE ID = '%s'",
+		"UPDATE Passengers SET FirstName='%s', LastName='%s', MobileNumber='%s', EmailAddress='%s' WHERE ID = '%s'",
 		FN, LN, MobileNumber, Email, ID)
 	_, err := db.Query(query)
 	if err != nil {
@@ -26,25 +26,32 @@ func EditRecord(db *sql.DB, ID string, FN string, LN string, MobileNumber string
 	}
 }
 
-func GetRecords(db *sql.DB, ID string) {
+func GetRecords(db *sql.DB, ID string) (passengerInfo, bool) {
+	var passenger passengerInfo
 	query := fmt.Sprintf("Select * FROM passenger_db.Passengers WHERE ID = '%s'", ID)
-	results, err := db.Query(query)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	for results.Next() {
-		// map this type to the record in the table
-		var passenger passengerInfo
-		err = results.Scan(&passenger.Id, &passenger.Firstname,
-			&passenger.Lastname, &passenger.Mobilenumber, &passenger.Email)
-		if err != nil {
-			panic(err.Error())
+	if err := db.QueryRow(query).Scan(&passenger.Id, &passenger.Firstname,
+		&passenger.Lastname, &passenger.Mobilenumber, &passenger.Email); err != nil {
+		if err == sql.ErrNoRows {
+			return passenger, false
 		}
-
-		fmt.Println(passenger.Firstname,
-			passenger.Lastname, passenger.Mobilenumber, passenger.Email)
-		// return passenger
 	}
+	return passenger, true
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	// for results.Next() {
+	// 	// map this type to the record in the table
+	// 	var passenger passengerInfo
+	// 	err = results.Scan(&passenger.Id, &passenger.Firstname,
+	// 		&passenger.Lastname, &passenger.Mobilenumber, &passenger.Email)
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
+
+	// 	fmt.Println(passenger.Firstname,
+	// 		passenger.Lastname, passenger.Mobilenumber, passenger.Email)
+	// 	return passenger
+	// }
 
 }

@@ -23,48 +23,86 @@ type passengerInfo struct {
 	Email        string
 }
 
-// HTML display functions
+var passenger passengerInfo
+
+// Webpages
 func homePage(w http.ResponseWriter, r *http.Request) {
 
 	tmpl := template.Must(template.ParseFiles("Website/homepage.html"))
 
-	tmpl.Execute(w, "data goes here")
+	tmpl.Execute(w, nil)
 }
 
-func passengerPage(w http.ResponseWriter, r *http.Request) {
+func passengerHome(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 
-	tmpl := template.Must(template.ParseFiles("Website/passengerpage.html"))
+	url := PassengerAPIbaseURL
+	passengerID := params["passengerID"]
+	if passengerID != "" {
+		url = PassengerAPIbaseURL + "/" + passengerID
+	}
+	response, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("The HTTP request failed with error %s\n", err)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		json.Unmarshal([]byte(data), &passenger)
+	}
+	tmpl := template.Must(template.ParseFiles("Website/passengerHome.html"))
 
-	tmpl.Execute(w, "data goes here")
+	tmpl.Execute(w, passenger)
+
 }
+func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/passengerEdit.html"))
+		tmpl.Execute(w, passenger)
+	} else {
+		r.ParseForm()
+		url := PassengerAPIbaseURL
+		passengerData := new(passengerInfo)
+		passengerData.Id = passenger.Id
+		passengerData.Firstname = r.FormValue("firstname")
+		passengerData.Lastname = r.FormValue("lastname")
+		passengerData.Mobilenumber = r.FormValue("mobileNo")
+		passengerData.Email = r.FormValue("email")
 
-// API call functions
+		passengerToUpdate, _ := json.Marshal(passengerData)
+
+		request, _ := http.NewRequest(http.MethodPut,
+			url+"/"+passenger.Id,
+			bytes.NewBuffer(passengerToUpdate))
+
+		request.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		_, err := client.Do(request)
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			fmt.Println("edit complete")
+			redirectURL := fmt.Sprintf("/passenger/%s", passenger.Id)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+		}
+
+	}
+}
 func passengerLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		tmpl := template.Must(template.ParseFiles("Website/passengerLogin.html"))
 		tmpl.Execute(w, nil)
 	} else {
 		r.ParseForm()
-		url := PassengerAPIbaseURL
 		id := r.FormValue("id")
+		redirectURL := fmt.Sprintf("/passenger/%s", id)
 
-		if id != "" {
-			url = PassengerAPIbaseURL + "/" + id
-		}
-		fmt.Println("url:", url)
-		response, err := http.Get(url)
+		http.Redirect(w, r, redirectURL, http.StatusFound)
 
-		if err != nil {
-			fmt.Printf("The HTTP request failed with error %s\n", err)
-		} else {
-			fmt.Printf("working")
-
-			response.Body.Close()
-			// reroute to passenger home
-
-		}
 	}
 }
+
 func passengerSignup(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		tmpl := template.Must(template.ParseFiles("Website/passengerSignup.html"))
@@ -72,13 +110,7 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 	} else {
 		r.ParseForm()
 		url := PassengerAPIbaseURL
-		passengerDetails := &passengerInfo{
-			Id:           r.FormValue("id"),
-			Firstname:    r.FormValue("firstname"),
-			Lastname:     r.FormValue("lastname"),
-			Mobilenumber: r.FormValue("mobileNo"),
-			Email:        r.FormValue("email"),
-		}
+
 		passengerData := new(passengerInfo)
 		passengerData.Id = r.FormValue("id")
 		passengerData.Firstname = r.FormValue("firstname")
@@ -88,16 +120,16 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 
 		passengerToAdd, _ := json.Marshal(passengerData)
 
-		response, err := http.Post(url+"/"+passengerDetails.Id,
+		_, err := http.Post(url+"/"+passengerData.Id,
 			"application/json", bytes.NewBuffer(passengerToAdd))
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
-			fmt.Println(response.StatusCode)
-			fmt.Println(string(data))
-			response.Body.Close()
+			redirectURL := fmt.Sprintf("/passenger/%s", passengerData.Id)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+
 		}
 	}
 }
@@ -106,9 +138,10 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/passenger", passengerPage)
 	router.HandleFunc("/passengerLogin", passengerLogin)
 	router.HandleFunc("/passengerSignup", passengerSignup)
+	router.HandleFunc("/passenger/{passengerID}", passengerHome)
+	router.HandleFunc("/passenger/{passengerID}/editPDetails", passengerEditDetails)
 
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", router))

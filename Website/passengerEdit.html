@@ -1,0 +1,22 @@
+<html lang="en-US">
+    <body>
+        <a href="/passenger/{{.Id}}">Return</a><br>
+        <form action="/passenger/{{.Id}}/editPDetails" method="post">
+            <h2>Update details</h2>
+            <br>
+            <label>First name:</label>
+            <input type="text" placeholder="Enter First name" name="firstname" value="{{.Firstname}}" required/>
+            <br>
+            <label>Last name:</label>
+            <input type="text" placeholder="Enter Last name" name="lastname" value="{{.Lastname}}" required/>
+            <br>
+            <label>Mobile number:</label>
+            <input type="text" placeholder="Enter Mobile number" name="mobileNo" value="{{.Mobilenumber}}" required/>
+            <br>
+            <label>Email:</label>
+            <input type="text" placeholder="Enter Email" name="email" value="{{.Email}}" required/>
+            <br>
+            <button type="submit">Go</button>
+        </form>
+    </body>
+</html>
