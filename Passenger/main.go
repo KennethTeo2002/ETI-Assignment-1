@@ -74,32 +74,27 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Header.Get("Content-type") == "application/json" {
+		var newpassenger passengerInfo
+		reqBody, err := ioutil.ReadAll(r.Body)
 
-		// POST is for creating new passenger
-		if r.Method == "POST" {
-
-			// read the string sent to the service
-			var newpassenger passengerInfo
-			reqBody, err := ioutil.ReadAll(r.Body)
-
-			if err == nil {
-				// convert JSON to object
-				json.Unmarshal(reqBody, &newpassenger)
-
-				if newpassenger.Firstname == "" {
-					w.WriteHeader(
-						http.StatusUnprocessableEntity)
-					w.Write([]byte(
-						"422 - Please supply passenger " +
-							"information " + "in JSON format"))
-					return
-				}
-
+		if err == nil {
+			json.Unmarshal(reqBody, &newpassenger)
+			// Check if JSON missing any values
+			missingValues := newpassenger.Firstname == "" || newpassenger.Lastname == "" || newpassenger.Mobilenumber == "" || newpassenger.Email == ""
+			if missingValues == true {
+				w.WriteHeader(
+					http.StatusUnprocessableEntity)
+				w.Write([]byte(
+					"422 - Missing passenger information "))
+				return
+			}
+			// POST is for creating new passenger
+			if r.Method == "POST" {
 				// check if course exists; add only if
 				// course does not exist
 				if _, ok := passengers[params["passengerID"]]; !ok {
-					InsertRecord(db, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
-					passengers[params["passengerID"]] = newpassenger
+					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+
 					w.WriteHeader(http.StatusCreated)
 					w.Write([]byte("201 - passenger added: " +
 						params["passengerID"]))
@@ -108,59 +103,33 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte(
 						"409 - Duplicate passenger ID"))
 				}
-			} else {
-				w.WriteHeader(
-					http.StatusUnprocessableEntity)
-				w.Write([]byte("422 - Please supply passenger information " +
-					"in JSON format"))
 			}
-		}
-
-		//---PUT is for creating or updating
-		// existing passenger---
-		if r.Method == "PUT" {
-			var newpassenger passengerInfo
-			reqBody, err := ioutil.ReadAll(r.Body)
-
-			if err == nil {
-				json.Unmarshal(reqBody, &newpassenger)
-
-				if newpassenger.Firstname == "" {
-					w.WriteHeader(
-						http.StatusUnprocessableEntity)
-					w.Write([]byte(
-						"422 - Please supply passenger " +
-							" information " +
-							"in JSON format"))
-					return
-				}
-
-				// check if passenger exists; add only if
-				// passenger does not exist
+			//---PUT is for creating or updating
+			// existing passenger---
+			if r.Method == "PUT" {
 				if _, ok := passengers[params["passengerID"]]; !ok {
-					passengers[params["passengerID"]] =
-						newpassenger
+					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+
 					w.WriteHeader(http.StatusCreated)
 					w.Write([]byte("201 - passenger added: " +
 						params["passengerID"]))
 				} else {
 					// update passenger
-					passengers[params["passengerID"]] = newpassenger
+					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 					w.WriteHeader(http.StatusAccepted)
 					w.Write([]byte("202 - passenger updated: " +
 						params["passengerID"]))
 				}
-			} else {
-				w.WriteHeader(
-					http.StatusUnprocessableEntity)
-				w.Write([]byte("422 - Please supply " +
-					"passenger information " +
-					"in JSON format"))
 			}
+
+		} else {
+			w.WriteHeader(
+				http.StatusUnprocessableEntity)
+			w.Write([]byte("422 - Please supply passenger information " +
+				"in JSON format"))
 		}
 
 	}
-
 }
 
 func main() {
