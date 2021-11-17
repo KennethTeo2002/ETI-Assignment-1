@@ -12,12 +12,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type passengerInfo struct {
-	Id           string
-	Firstname    string
-	Lastname     string
-	Mobilenumber string
-	Email        string
+type driverInfo struct {
+	Id             string
+	Firstname      string
+	Lastname       string
+	Mobilenumber   string
+	Email          string
+	Identification string
+	CarLicense     string
 }
 
 /*
@@ -39,13 +41,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the REST API!")
 }
 
-func passenger(w http.ResponseWriter, r *http.Request) {
+func driver(w http.ResponseWriter, r *http.Request) {
 	// if !validKey(r) {
 	// 	w.WriteHeader(http.StatusNotFound)
 	// 	w.Write([]byte("401 - Invalid key"))
 	// 	return
 	// }
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/passenger_db")
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
 
 	// handle error
 	if err != nil {
@@ -57,23 +59,23 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	if r.Method == "GET" {
-		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
-			json.NewEncoder(w).Encode(passenger)
+		if driver, ok := GetRecords(db, params["driverID"]); ok {
+			json.NewEncoder(w).Encode(driver)
 
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 - No passenger found"))
+			w.Write([]byte("404 - No driver found"))
 		}
 	}
 
 	if r.Header.Get("Content-type") == "application/json" {
-		var newpassenger passengerInfo
+		var newdriver driverInfo
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err == nil {
-			json.Unmarshal(reqBody, &newpassenger)
+			json.Unmarshal(reqBody, &newdriver)
 			// Check if JSON missing any values
-			missingValues := newpassenger.Firstname == "" || newpassenger.Lastname == "" || newpassenger.Mobilenumber == "" || newpassenger.Email == ""
+			missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.Identification == "" || newdriver.CarLicense == ""
 			if missingValues {
 				w.WriteHeader(
 					http.StatusUnprocessableEntity)
@@ -85,8 +87,8 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
 				// check if course exists; add only if
 				// course does not exist
-				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+				if _, ok := GetRecords(db, params["driverID"]); !ok {
+					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
 
 				} else {
 					w.WriteHeader(http.StatusConflict)
@@ -98,12 +100,12 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			// existing passenger---
 			if r.Method == "PUT" {
 
-				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+				if _, ok := GetRecords(db, params["driverID"]); !ok {
+					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
 
 				} else {
 					// update passenger
-					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+					EditRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.CarLicense)
 
 				}
 			}
@@ -122,9 +124,8 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/", home)
-	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(
+	router.HandleFunc("/api/v1/driver/{driverID}", driver).Methods(
 		"GET", "PUT", "POST")
-
 	fmt.Println("Listening at port 5000")
 	log.Fatal(http.ListenAndServe(":5000", router))
 }

@@ -37,21 +37,4 @@ func GetRecords(db *sql.DB, ID string) (passengerInfo, bool) {
 	}
 	return passenger, true
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	// for results.Next() {
-	// 	// map this type to the record in the table
-	// 	var passenger passengerInfo
-	// 	err = results.Scan(&passenger.Id, &passenger.Firstname,
-	// 		&passenger.Lastname, &passenger.Mobilenumber, &passenger.Email)
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
-
-	// 	fmt.Println(passenger.Firstname,
-	// 		passenger.Lastname, passenger.Mobilenumber, passenger.Email)
-	// 	return passenger
-	// }
-
 }

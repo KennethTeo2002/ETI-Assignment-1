@@ -48,14 +48,14 @@ func passengerHome(w http.ResponseWriter, r *http.Request) {
 		data, _ := ioutil.ReadAll(response.Body)
 		json.Unmarshal([]byte(data), &passenger)
 	}
-	tmpl := template.Must(template.ParseFiles("Website/passengerHome.html"))
+	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerHome.html"))
 
 	tmpl.Execute(w, passenger)
 
 }
 func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		tmpl := template.Must(template.ParseFiles("Website/passengerEdit.html"))
+		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerEdit.html"))
 		tmpl.Execute(w, passenger)
 	} else {
 		r.ParseForm()
@@ -81,7 +81,7 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			fmt.Println("edit complete")
+
 			redirectURL := fmt.Sprintf("/passenger/%s", passenger.Id)
 
 			http.Redirect(w, r, redirectURL, http.StatusFound)
@@ -91,7 +91,7 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 }
 func passengerLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		tmpl := template.Must(template.ParseFiles("Website/passengerLogin.html"))
+		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerLogin.html"))
 		tmpl.Execute(w, nil)
 	} else {
 		r.ParseForm()
@@ -105,7 +105,7 @@ func passengerLogin(w http.ResponseWriter, r *http.Request) {
 
 func passengerSignup(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		tmpl := template.Must(template.ParseFiles("Website/passengerSignup.html"))
+		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerSignup.html"))
 		tmpl.Execute(w, nil)
 	} else {
 		r.ParseForm()
@@ -138,10 +138,18 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", homePage)
+
+	//routes for passenger
 	router.HandleFunc("/passengerLogin", passengerLogin)
 	router.HandleFunc("/passengerSignup", passengerSignup)
 	router.HandleFunc("/passenger/{passengerID}", passengerHome)
 	router.HandleFunc("/passenger/{passengerID}/editPDetails", passengerEditDetails)
+
+	//routes for driver
+	router.HandleFunc("/driverLogin", passengerLogin)
+	router.HandleFunc("/driverSignup", passengerSignup)
+	router.HandleFunc("/driver/{driverID}", passengerHome)
+	router.HandleFunc("/driver/{driverID}/editDDetails", passengerEditDetails)
 
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", router))
