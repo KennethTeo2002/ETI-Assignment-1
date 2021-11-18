@@ -1,13 +1,25 @@
+<!DOCTYPE html>
 <html lang="en-US">
+    <head>
+        <title>Passenger Login</title>
+        <link rel="stylesheet" href="css/login.css">
+    </head>
     <body>
-        <a href="/">Return</a><br>
-        <form action="/passengerLogin" method="post">
-            <label>Passenger login</label>
-            <br>
-            <input type="text" placeholder="Enter id" name="id"/>
-            <button type="submit">Go</button>
-        </form>
-        <p>or</p>
-            <a href="/passengerSignup">Create account</a>
+        <div class="center">
+            <h1>Passenger Login</h1>
+            <form method="post" action="/passengerLogin">
+              <div class="txt_field">
+                <input type="text" name="id" required>
+                <span></span>
+                <label>PassengerID</label>
+              </div>
+              
+              <input type="submit" value="Login">
+              <div class="signup_link">
+                Not a member? <a href="/passengerSignup">Signup</a>
+              </div>
+            </form>
+          </div>
+
     </body>
 </html>

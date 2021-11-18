@@ -269,6 +269,9 @@ func main() {
 
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
 		http.FileServer(http.Dir("Website/css/"))))
+
+	router.PathPrefix("/img/").Handler(http.StripPrefix("/img/",
+		http.FileServer(http.Dir("Website/img/"))))
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
