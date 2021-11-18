@@ -7,19 +7,20 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
-type driverInfo struct {
-	Id             string
-	Firstname      string
-	Lastname       string
-	Mobilenumber   string
-	Email          string
-	Identification string
-	CarLicense     string
+type tripInfo struct {
+	Id        string
+	CustID    string
+	DriverID  string
+	PickUp    string
+	DropOff   string
+	StartTime time.Time
+	EndTime   time.Time
 }
 
 /*
@@ -38,16 +39,16 @@ func validKey(r *http.Request) bool {
 */
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the Driver REST API!")
+	fmt.Fprintf(w, "Welcome to the Trip REST API!")
 }
 
-func driver(w http.ResponseWriter, r *http.Request) {
+func trip(w http.ResponseWriter, r *http.Request) {
 	// if !validKey(r) {
 	// 	w.WriteHeader(http.StatusNotFound)
 	// 	w.Write([]byte("401 - Invalid key"))
 	// 	return
 	// }
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
 
 	// handle error
 	if err != nil {
@@ -57,23 +58,23 @@ func driver(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	if r.Method == "GET" {
-		if driver, ok := GetRecords(db, params["driverID"]); ok {
-			json.NewEncoder(w).Encode(driver)
+		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
+			json.NewEncoder(w).Encode(passenger)
 
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 - No driver found"))
+			w.Write([]byte("404 - No passenger found"))
 		}
 	}
 
 	if r.Header.Get("Content-type") == "application/json" {
-		var newdriver driverInfo
+		var newpassenger passengerInfo
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err == nil {
-			json.Unmarshal(reqBody, &newdriver)
+			json.Unmarshal(reqBody, &newpassenger)
 			// Check if JSON missing any values
-			missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.Identification == "" || newdriver.CarLicense == ""
+			missingValues := newpassenger.Firstname == "" || newpassenger.Lastname == "" || newpassenger.Mobilenumber == "" || newpassenger.Email == ""
 			if missingValues {
 				w.WriteHeader(
 					http.StatusUnprocessableEntity)
@@ -85,8 +86,8 @@ func driver(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
 				// check if course exists; add only if
 				// course does not exist
-				if _, ok := GetRecords(db, params["driverID"]); !ok {
-					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
+				if _, ok := GetRecords(db, params["passengerID"]); !ok {
+					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
 				} else {
 					w.WriteHeader(http.StatusConflict)
@@ -98,12 +99,12 @@ func driver(w http.ResponseWriter, r *http.Request) {
 			// existing passenger---
 			if r.Method == "PUT" {
 
-				if _, ok := GetRecords(db, params["driverID"]); !ok {
-					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
+				if _, ok := GetRecords(db, params["passengerID"]); !ok {
+					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
 				} else {
 					// update passenger
-					EditRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.CarLicense)
+					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
 				}
 			}
@@ -122,8 +123,9 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/", home)
-	router.HandleFunc("/api/v1/driver/{driverID}", driver).Methods(
+	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(
 		"GET", "PUT", "POST")
+
 	fmt.Println("Listening at port 5000")
 	log.Fatal(http.ListenAndServe(":5000", router))
 }

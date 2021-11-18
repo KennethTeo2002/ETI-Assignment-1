@@ -14,6 +14,7 @@ import (
 
 // Variables
 const PassengerAPIbaseURL = "http://localhost:5000/api/v1/passenger"
+const DriverAPIbaseURL = "http://localhost:5000/api/v1/driver"
 
 type passengerInfo struct {
 	Id           string
@@ -22,8 +23,18 @@ type passengerInfo struct {
 	Mobilenumber string
 	Email        string
 }
+type driverInfo struct {
+	Id             string
+	Firstname      string
+	Lastname       string
+	Mobilenumber   string
+	Email          string
+	Identification string
+	CarLicense     string
+}
 
 var passenger passengerInfo
+var driver driverInfo
 
 // Webpages
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -134,6 +145,111 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func driverHome(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	url := DriverAPIbaseURL
+	driverID := params["driverID"]
+	if driverID != "" {
+		url = DriverAPIbaseURL + "/" + driverID
+	}
+	response, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("The HTTP request failed with error %s\n", err)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		json.Unmarshal([]byte(data), &driver)
+	}
+	tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
+
+	tmpl.Execute(w, driver)
+
+}
+
+func driverEditDetails(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/Driver/driverEdit.html"))
+		tmpl.Execute(w, driver)
+	} else {
+		r.ParseForm()
+		url := DriverAPIbaseURL
+		driverData := new(driverInfo)
+		driverData.Id = driver.Id
+		driverData.Firstname = r.FormValue("firstname")
+		driverData.Lastname = r.FormValue("lastname")
+		driverData.Mobilenumber = r.FormValue("mobileNo")
+		driverData.Email = r.FormValue("email")
+		driverData.CarLicense = r.FormValue("carLicense")
+
+		driverToUpdate, _ := json.Marshal(driverData)
+
+		request, _ := http.NewRequest(http.MethodPut,
+			url+"/"+driver.Id,
+			bytes.NewBuffer(driverToUpdate))
+
+		request.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		_, err := client.Do(request)
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+
+			redirectURL := fmt.Sprintf("/driver/%s", driver.Id)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+		}
+
+	}
+}
+func driverLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/Driver/driverLogin.html"))
+		tmpl.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		id := r.FormValue("id")
+		redirectURL := fmt.Sprintf("/driver/%s", id)
+
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+
+	}
+}
+
+func driverSignup(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/Driver/driverSignup.html"))
+		tmpl.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		url := DriverAPIbaseURL
+
+		driverData := new(driverInfo)
+		driverData.Id = r.FormValue("id")
+		driverData.Firstname = r.FormValue("firstname")
+		driverData.Lastname = r.FormValue("lastname")
+		driverData.Mobilenumber = r.FormValue("mobileNo")
+		driverData.Email = r.FormValue("email")
+		driverData.Identification = r.FormValue("identification")
+		driverData.CarLicense = r.FormValue("carLicense")
+
+		driverToAdd, _ := json.Marshal(driverData)
+
+		_, err := http.Post(url+"/"+driverData.Id,
+			"application/json", bytes.NewBuffer(driverToAdd))
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			redirectURL := fmt.Sprintf("/driver/%s", driverData.Id)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		}
+	}
+}
+
 // main
 func main() {
 	router := mux.NewRouter()
@@ -146,11 +262,13 @@ func main() {
 	router.HandleFunc("/passenger/{passengerID}/editPDetails", passengerEditDetails)
 
 	//routes for driver
-	router.HandleFunc("/driverLogin", passengerLogin)
-	router.HandleFunc("/driverSignup", passengerSignup)
-	router.HandleFunc("/driver/{driverID}", passengerHome)
-	router.HandleFunc("/driver/{driverID}/editDDetails", passengerEditDetails)
+	router.HandleFunc("/driverLogin", driverLogin)
+	router.HandleFunc("/driverSignup", driverSignup)
+	router.HandleFunc("/driver/{driverID}", driverHome)
+	router.HandleFunc("/driver/{driverID}/editDDetails", driverEditDetails)
 
+	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
+		http.FileServer(http.Dir("Website/css/"))))
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

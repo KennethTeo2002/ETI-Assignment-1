@@ -36,7 +36,7 @@ func validKey(r *http.Request) bool {
 */
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the REST API!")
+	fmt.Fprintf(w, "Welcome to the Passenger REST API!")
 }
 
 func passenger(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +50,6 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	// handle error
 	if err != nil {
 		panic(err.Error())
-	} else {
-		fmt.Println("Database opened")
 	}
 
 	params := mux.Vars(r)
