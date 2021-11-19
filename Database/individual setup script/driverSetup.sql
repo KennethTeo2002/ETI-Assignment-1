@@ -10,4 +10,6 @@ USE driver_db;
 
 -- INSERT INTO Drivers (ID, FirstName, LastName, MobileNumber,EmailAddress,Identification,CarLicense,Driving) VALUES ("0001", "Bron", "son", "65423324", "bonzey@hotmail.com", "S2391782Z","SGL2782D",false);
 
-SELECT * FROM Drivers
+SELECT * FROM Drivers ;
+-- Update Drivers set Driving = false where ID = '2'
+

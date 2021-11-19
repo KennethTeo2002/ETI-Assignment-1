@@ -20,6 +20,7 @@ type driverInfo struct {
 	Email          string
 	Identification string
 	CarLicense     string
+	Driving        bool
 }
 
 /*
@@ -58,6 +59,7 @@ func driver(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		if driver, ok := GetRecords(db, params["driverID"]); ok {
+
 			json.NewEncoder(w).Encode(driver)
 
 		} else {
@@ -69,20 +71,20 @@ func driver(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-type") == "application/json" {
 		var newdriver driverInfo
 		reqBody, err := ioutil.ReadAll(r.Body)
-
 		if err == nil {
 			json.Unmarshal(reqBody, &newdriver)
 			// Check if JSON missing any values
-			missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.Identification == "" || newdriver.CarLicense == ""
-			if missingValues {
-				w.WriteHeader(
-					http.StatusUnprocessableEntity)
-				w.Write([]byte(
-					"422 - Missing passenger information "))
-				return
-			}
+
 			// POST is for creating new passenger
 			if r.Method == "POST" {
+				missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.Identification == "" || newdriver.CarLicense == ""
+				if missingValues {
+					w.WriteHeader(
+						http.StatusUnprocessableEntity)
+					w.Write([]byte(
+						"422 - Missing passenger information "))
+					return
+				}
 				// check if course exists; add only if
 				// course does not exist
 				if _, ok := GetRecords(db, params["driverID"]); !ok {
@@ -97,15 +99,19 @@ func driver(w http.ResponseWriter, r *http.Request) {
 			//---PUT is for creating or updating
 			// existing passenger---
 			if r.Method == "PUT" {
-
-				if _, ok := GetRecords(db, params["driverID"]); !ok {
-					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
-
-				} else {
-					// update passenger
-					EditRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.CarLicense)
-
+				missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.CarLicense == ""
+				if missingValues {
+					w.WriteHeader(
+						http.StatusUnprocessableEntity)
+					w.Write([]byte(
+						"422 - Missing passenger information "))
+					return
 				}
+
+				// update passenger
+
+				EditRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.CarLicense)
+
 			}
 
 		} else {
@@ -118,12 +124,37 @@ func driver(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func driverTrip(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
+	// handle error
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// params := mux.Vars(r)
+
+	if r.Method == "GET" {
+		if driver, ok := GetAvailableDriver(db); ok {
+			ToggleDriving(db, driver.Id)
+			w.Write([]byte(driver.Id))
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(""))
+		}
+	}
+
+}
+
 func main() {
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/", home)
+	router.HandleFunc("/api/v1/driver", home)
 	router.HandleFunc("/api/v1/driver/{driverID}", driver).Methods(
 		"GET", "PUT", "POST")
-	fmt.Println("Listening at port 5000")
-	log.Fatal(http.ListenAndServe(":5000", router))
+
+	router.HandleFunc("/api/v1/drivertrip", driverTrip).Methods(
+		"GET", "PUT")
+
+	fmt.Println("Listening at port 5001")
+	log.Fatal(http.ListenAndServe(":5001", router))
 }

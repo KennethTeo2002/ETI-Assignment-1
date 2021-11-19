@@ -8,13 +8,15 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
 // Variables
 const PassengerAPIbaseURL = "http://localhost:5000/api/v1/passenger"
-const DriverAPIbaseURL = "http://localhost:5000/api/v1/driver"
+const DriverAPIbaseURL = "http://localhost:5001/api/v1/driver"
+const TripAPIbaseURL = "http://localhost:5002/api/v1/trip"
 
 type passengerInfo struct {
 	Id           string
@@ -31,6 +33,20 @@ type driverInfo struct {
 	Email          string
 	Identification string
 	CarLicense     string
+	Driving        bool
+}
+type tripInfo struct {
+	Id        string
+	CustID    string
+	DriverID  string
+	PickUp    string
+	DropOff   string
+	StartTime time.Time
+	EndTime   time.Time
+}
+type DriverHomeData struct {
+	Driver     driverInfo
+	ActiveTrip tripInfo
 }
 
 var passenger passengerInfo
@@ -154,15 +170,34 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 		url = DriverAPIbaseURL + "/" + driverID
 	}
 	response, err := http.Get(url)
+
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
 		json.Unmarshal([]byte(data), &driver)
+
+	}
+
+	if driverID != "" {
+		url = TripAPIbaseURL + "/driver/" + driverID
+	}
+	responsetrip, errtrip := http.Get(url)
+	var activeTrip tripInfo
+	if errtrip != nil {
+		fmt.Printf("The HTTP request failed with error %s\n", err)
+	} else {
+		data, _ := ioutil.ReadAll(responsetrip.Body)
+		json.Unmarshal([]byte(data), &activeTrip)
+	}
+
+	pageData := DriverHomeData{
+		Driver:     driver,
+		ActiveTrip: activeTrip,
 	}
 	tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
 
-	tmpl.Execute(w, driver)
+	tmpl.Execute(w, pageData)
 
 }
 
@@ -180,7 +215,6 @@ func driverEditDetails(w http.ResponseWriter, r *http.Request) {
 		driverData.Mobilenumber = r.FormValue("mobileNo")
 		driverData.Email = r.FormValue("email")
 		driverData.CarLicense = r.FormValue("carLicense")
-
 		driverToUpdate, _ := json.Marshal(driverData)
 
 		request, _ := http.NewRequest(http.MethodPut,
@@ -250,28 +284,82 @@ func driverSignup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func passengerViewTrips(w http.ResponseWriter, r *http.Request) {
+	// todo: get trip array from trip api
+	params := mux.Vars(r)
+	url := PassengerAPIbaseURL
+	passengerID := params["passengerID"]
+	if passengerID != "" {
+		url = TripAPIbaseURL + "/passenger/" + passengerID
+	}
+	response, err := http.Get(url)
+	var trips []tripInfo
+	if err != nil {
+		fmt.Printf("The HTTP request failed with error %s\n", err)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		json.Unmarshal([]byte(data), &trips)
+	}
+
+	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerViewTrip.html"))
+	tmpl.Execute(w, trips)
+}
+
+func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerRequestTrip.html"))
+		tmpl.Execute(w, passenger)
+	} else {
+		r.ParseForm()
+		params := mux.Vars(r)
+		url := TripAPIbaseURL
+		tripData := new(tripInfo)
+		tripData.CustID = params["passengerID"]
+		tripData.PickUp = r.FormValue("pickup")
+		tripData.DropOff = r.FormValue("dropoff")
+
+		tripToAdd, _ := json.Marshal(tripData)
+
+		_, err := http.Post(url+"/passenger/"+tripData.CustID,
+			"application/json", bytes.NewBuffer(tripToAdd))
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			redirectURL := fmt.Sprintf("/passenger/%s", tripData.CustID)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		}
+	}
+
+}
+
 // main
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", homePage)
 
-	//routes for passenger
+	// routes for passenger
 	router.HandleFunc("/passengerLogin", passengerLogin)
 	router.HandleFunc("/passengerSignup", passengerSignup)
 	router.HandleFunc("/passenger/{passengerID}", passengerHome)
 	router.HandleFunc("/passenger/{passengerID}/editPDetails", passengerEditDetails)
+	router.HandleFunc("/passenger/{passengerID}/viewTrips", passengerViewTrips)
+	router.HandleFunc("/passenger/{passengerID}/requestTrip", passengerRequestTrip)
 
-	//routes for driver
+	// routes for driver
 	router.HandleFunc("/driverLogin", driverLogin)
 	router.HandleFunc("/driverSignup", driverSignup)
 	router.HandleFunc("/driver/{driverID}", driverHome)
 	router.HandleFunc("/driver/{driverID}/editDDetails", driverEditDetails)
 
+	// html assets
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
 		http.FileServer(http.Dir("Website/css/"))))
-
 	router.PathPrefix("/img/").Handler(http.StripPrefix("/img/",
 		http.FileServer(http.Dir("Website/img/"))))
+
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

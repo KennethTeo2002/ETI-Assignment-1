@@ -13,6 +13,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const DriverAPIbaseURL = "http://localhost:5001/api/v1/driver"
+
 type tripInfo struct {
 	Id        string
 	CustID    string
@@ -42,14 +44,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Trip REST API!")
 }
 
-func trip(w http.ResponseWriter, r *http.Request) {
+func tripPassenger(w http.ResponseWriter, r *http.Request) {
 	// if !validKey(r) {
 	// 	w.WriteHeader(http.StatusNotFound)
 	// 	w.Write([]byte("401 - Invalid key"))
 	// 	return
 	// }
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
-
 	// handle error
 	if err != nil {
 		panic(err.Error())
@@ -58,55 +59,111 @@ func trip(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	if r.Method == "GET" {
-		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
-			json.NewEncoder(w).Encode(passenger)
+		if tripArr, ok := GetPassengerTrips(db, params["passengerID"]); ok {
+			json.NewEncoder(w).Encode(tripArr)
 
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 - No passenger found"))
+			w.Write([]byte("404 - No trips found"))
 		}
 	}
 
 	if r.Header.Get("Content-type") == "application/json" {
-		var newpassenger passengerInfo
+		var tripdetails tripInfo
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err == nil {
-			json.Unmarshal(reqBody, &newpassenger)
+			json.Unmarshal(reqBody, &tripdetails)
 			// Check if JSON missing any values
-			missingValues := newpassenger.Firstname == "" || newpassenger.Lastname == "" || newpassenger.Mobilenumber == "" || newpassenger.Email == ""
+			missingValues := tripdetails.CustID == "" || tripdetails.PickUp == "" || tripdetails.DropOff == ""
 			if missingValues {
 				w.WriteHeader(
 					http.StatusUnprocessableEntity)
 				w.Write([]byte(
-					"422 - Missing passenger information "))
+					"422 - Missing trip information "))
 				return
 			}
-			// POST is for creating new passenger
+			// POST is for creating new trip
 			if r.Method == "POST" {
-				// check if course exists; add only if
-				// course does not exist
-				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
+				url := DriverAPIbaseURL + "trip"
+
+				response, err := http.Get(url)
+				if err != nil {
+					fmt.Printf("The HTTP request failed with error %s\n", err)
 				} else {
-					w.WriteHeader(http.StatusConflict)
-					w.Write([]byte(
-						"409 - Duplicate passenger ID"))
+					data, _ := ioutil.ReadAll(response.Body)
+					if string(data) != "" {
+						tripdetails.DriverID = string(data)
+						InsertRecord(db, tripdetails.CustID, tripdetails.DriverID, tripdetails.PickUp, tripdetails.DropOff)
+					}
+
 				}
+
 			}
-			//---PUT is for creating or updating
-			// existing passenger---
-			if r.Method == "PUT" {
 
-				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+		} else {
+			w.WriteHeader(
+				http.StatusUnprocessableEntity)
+			w.Write([]byte("422 - Please supply passenger information " +
+				"in JSON format"))
+		}
 
+	}
+}
+func tripDriver(w http.ResponseWriter, r *http.Request) {
+	// if !validKey(r) {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	w.Write([]byte("401 - Invalid key"))
+	// 	return
+	// }
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	// handle error
+	if err != nil {
+		panic(err.Error())
+	}
+
+	params := mux.Vars(r)
+
+	if r.Method == "GET" {
+		if trip, ok := GetDriverTrips(db, params["driverID"]); ok {
+			json.NewEncoder(w).Encode(trip)
+
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("404 - No trip active"))
+		}
+	}
+
+	if r.Header.Get("Content-type") == "application/json" {
+		var tripdetails tripInfo
+		reqBody, err := ioutil.ReadAll(r.Body)
+
+		if err == nil {
+			json.Unmarshal(reqBody, &tripdetails)
+			// Check if JSON missing any values
+			missingValues := tripdetails.CustID == "" || tripdetails.PickUp == "" || tripdetails.DropOff == ""
+			if missingValues {
+				w.WriteHeader(
+					http.StatusUnprocessableEntity)
+				w.Write([]byte(
+					"422 - Missing trip information "))
+				return
+			}
+			// POST is for creating new trip
+			if r.Method == "POST" {
+				// availableDriver, _ := GetAvailableDriver(db)
+				url := DriverAPIbaseURL + "/trip"
+
+				response, err := http.Get(url)
+				if err != nil {
+					fmt.Printf("The HTTP request failed with error %s\n", err)
 				} else {
-					// update passenger
-					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
-
+					data, _ := ioutil.ReadAll(response.Body)
+					json.Unmarshal([]byte(data), &tripdetails.DriverID)
+					InsertRecord(db, tripdetails.CustID, tripdetails.DriverID, tripdetails.PickUp, tripdetails.DropOff)
 				}
+
 			}
 
 		} else {
@@ -123,9 +180,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/", home)
-	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(
-		"GET", "PUT", "POST")
+	router.HandleFunc("/api/v1/trip/passenger/{passengerID}", tripPassenger).Methods(
+		"GET", "POST")
+	router.HandleFunc("/api/v1/trip/driver/{driverID}", tripDriver).Methods(
+		"GET", "PUT")
 
-	fmt.Println("Listening at port 5000")
-	log.Fatal(http.ListenAndServe(":5000", router))
+	fmt.Println("Listening at port 5002")
+	log.Fatal(http.ListenAndServe(":5002", router))
 }

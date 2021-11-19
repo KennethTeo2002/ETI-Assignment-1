@@ -119,7 +119,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/", home)
+	router.HandleFunc("/api/v1/passenger", home)
 	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(
 		"GET", "PUT", "POST")
 
