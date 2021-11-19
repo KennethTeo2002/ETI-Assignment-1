@@ -2,6 +2,14 @@
 <a href="/">Logout</a>
 <br>
 <a href="/driver/{{.Driver.Id}}/editDDetails">Edit details</a>
-<h2>View Trip</h2>
-{{.ActiveTrip.PickUp}}
-{{.ActiveTrip.DropOff}}
+{{if .ActiveTrip.Id}}
+    <h2>Active Trip</h2>
+        Request to travel from 
+        {{.ActiveTrip.PickUp}} to
+        {{.ActiveTrip.DropOff}}
+        <form action="/driver/{{.Driver.Id}}" method="post">
+            <input type="submit" name="start" value="Start Trip" />
+            <input type="submit" name="end" value="End Trip" />
+        </form>
+
+{{end}}

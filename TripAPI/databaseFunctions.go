@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 func InsertRecord(db *sql.DB, CustID string, DriverID string, PickupLoc string, DropoffLoc string) {
@@ -16,10 +17,10 @@ func InsertRecord(db *sql.DB, CustID string, DriverID string, PickupLoc string, 
 	}
 }
 
-func EditRecord(db *sql.DB, ID string, CustID string, DriverID string, PickupLoc string, DropoffLoc string, StartTime string, EndTime string) {
+func EditRecord(db *sql.DB, ID string, varTime string, setTime time.Time) {
 	query := fmt.Sprintf(
-		"UPDATE Trips SET CustomerID='%s', DriverID='%s', PickUp='%s', DropOff='%s', StartTime='%s',EndTime='%s' WHERE ID = '%s'",
-		CustID, DriverID, PickupLoc, DropoffLoc, StartTime, EndTime, ID)
+		"UPDATE Trips SET %s = now() WHERE ID = '%s'",
+		varTime, ID)
 	_, err := db.Query(query)
 	if err != nil {
 		panic(err.Error())
@@ -55,12 +56,12 @@ func GetDriverTrips(db *sql.DB, DriverID string) (tripInfo, bool) {
 	var trip tripInfo
 	query := fmt.Sprintf("Select * FROM trip_db.Trips WHERE DriverID = '%s' AND (StartTime IS NULL OR EndTime IS NULL)", DriverID)
 
-	if err := db.QueryRow(query).Scan(&trip.Id, &trip.CustID, &trip.PickUp, &trip.DropOff, &trip.StartTime, &trip.EndTime); err != nil {
+	if err := db.QueryRow(query).Scan(&trip.Id, &trip.CustID, &trip.DriverID, &trip.PickUp, &trip.DropOff, &trip.StartTime, &trip.EndTime); err != nil {
 		if err == sql.ErrNoRows {
 			return trip, false
 		}
 	}
-	fmt.Println(trip)
+
 	return trip, true
 
 }

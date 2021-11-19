@@ -51,6 +51,7 @@ type DriverHomeData struct {
 
 var passenger passengerInfo
 var driver driverInfo
+var activeTrip tripInfo
 
 // Webpages
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -162,42 +163,76 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func driverHome(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
+	if r.Method == "GET" {
+		params := mux.Vars(r)
 
-	url := DriverAPIbaseURL
-	driverID := params["driverID"]
-	if driverID != "" {
-		url = DriverAPIbaseURL + "/" + driverID
-	}
-	response, err := http.Get(url)
+		url := DriverAPIbaseURL
+		driverID := params["driverID"]
+		if driverID != "" {
+			url = DriverAPIbaseURL + "/" + driverID
+		}
+		response, err := http.Get(url)
 
-	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			data, _ := ioutil.ReadAll(response.Body)
+			json.Unmarshal([]byte(data), &driver)
+
+		}
+
+		if driverID != "" {
+			url = TripAPIbaseURL + "/driver/" + driverID
+		}
+		responsetrip, errtrip := http.Get(url)
+
+		if errtrip != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			data, _ := ioutil.ReadAll(responsetrip.Body)
+			json.Unmarshal([]byte(data), &activeTrip)
+		}
+
+		pageData := DriverHomeData{
+			Driver:     driver,
+			ActiveTrip: activeTrip,
+		}
+
+		tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
+
+		tmpl.Execute(w, pageData)
 	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		json.Unmarshal([]byte(data), &driver)
+		r.ParseForm()
+		tripUpdate := new(tripInfo)
+		tripUpdate.Id = activeTrip.Id
+
+		if r.FormValue("start") == "Start Trip" {
+			tripUpdate.StartTime = time.Now()
+		} else {
+			tripUpdate.EndTime = time.Now()
+		}
+
+		tripToUpdate, _ := json.Marshal(tripUpdate)
+
+		request, _ := http.NewRequest(http.MethodPut,
+			TripAPIbaseURL+"/driver/"+tripUpdate.DriverID,
+			bytes.NewBuffer(tripToUpdate))
+
+		request.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		_, err := client.Do(request)
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			redirectURL := fmt.Sprintf("/driver/%s", tripUpdate.DriverID)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		}
 
 	}
-
-	if driverID != "" {
-		url = TripAPIbaseURL + "/driver/" + driverID
-	}
-	responsetrip, errtrip := http.Get(url)
-	var activeTrip tripInfo
-	if errtrip != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
-	} else {
-		data, _ := ioutil.ReadAll(responsetrip.Body)
-		json.Unmarshal([]byte(data), &activeTrip)
-	}
-
-	pageData := DriverHomeData{
-		Driver:     driver,
-		ActiveTrip: activeTrip,
-	}
-	tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
-
-	tmpl.Execute(w, pageData)
 
 }
 

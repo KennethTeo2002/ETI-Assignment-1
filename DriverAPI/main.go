@@ -135,11 +135,21 @@ func driverTrip(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		if driver, ok := GetAvailableDriver(db); ok {
-			ToggleDriving(db, driver.Id)
 			w.Write([]byte(driver.Id))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(""))
+		}
+	}
+
+	if r.Header.Get("Content-type") == "application/json" {
+		var driver driverInfo
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err == nil {
+			json.Unmarshal(reqBody, &driver)
+			if r.Method == "PUT" {
+				ToggleDriving(db, driver.Id)
+			}
 		}
 	}
 

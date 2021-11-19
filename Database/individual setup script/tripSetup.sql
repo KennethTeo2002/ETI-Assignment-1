@@ -10,5 +10,4 @@ USE trip_db;
 -- DROP TABLE Trips;
 
 
-
 Select * FROM trip_db.Trips ;
