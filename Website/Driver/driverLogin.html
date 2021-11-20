@@ -1,13 +1,25 @@
+<!DOCTYPE html>
 <html lang="en-US">
+    <head>
+        <title>Driver Login</title>
+        <link rel="stylesheet" href="css/shortform.css">
+    </head>
     <body>
-        <a href="/">Return</a><br>
-        <form action="/driverLogin" method="post">
-            <label>Driver login</label>
-            <br>
-            <input type="text" placeholder="Enter id" name="id"/>
-            <button type="submit">Go</button>
-        </form>
-        <p>or</p>
-            <a href="/driverSignup">Create account</a>
+        <div class="center">
+            <h1>Driver Login</h1>
+            <form method="post" action="/driverLogin">
+              <div class="txt_field">
+                <input type="text" name="id" required>
+                <span></span>
+                <label>DriverID</label>
+              </div>
+              <input type="submit" value="Login">
+              <div class="signup_link">
+                Not a member? <a href="/driverSignup">Signup</a>
+              </div>
+            </form>
+          </div>
+          
+    
     </body>
 </html>

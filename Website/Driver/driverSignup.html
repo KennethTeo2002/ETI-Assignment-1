@@ -1,31 +1,50 @@
+<!DOCTYPE html>
 <html lang="en-US">
+    <head>
+        <title>Driver Signup</title>
+        <link rel="stylesheet" href="css/longform.css">
+    </head>
     <body>
-        <a href="/driverLogin">Return</a><br>
-        <form action="/driverSignup" method="post">
-            <h2>Driver sign up</h2>
-
-            <label>ID:</label>
-            <input type="text" placeholder="Enter id" name="id" required/>
-            <br>
-            <label>First name:</label>
-            <input type="text" placeholder="Enter First name" name="firstname" required/>
-            <br>
-            <label>Last name:</label>
-            <input type="text" placeholder="Enter Last name" name="lastname" required/>
-            <br>
-            <label>Mobile number:</label>
-            <input type="text" placeholder="Enter Mobile number" name="mobileNo" required/>
-            <br>
-            <label>Email:</label>
-            <input type="text" placeholder="Enter Email" name="email" required/>
-            <br>
-            <label>Identification number:</label>
-            <input type="text" placeholder="Enter Email" name="identification" required/>
-            <br>
-            <label>Car License number:</label>
-            <input type="text" placeholder="Enter Car License number" name="carLicense" required/>
-            <br>
-            <button type="submit">Go</button>
-        </form>
+        <div class="container">
+            <div class="title">Driver Registration</div>
+            <div class="content">
+                <form action="/driverSignup" method="post">
+                    <div class="user-details">
+                        <div class="input-box">
+                            <span class="details">ID</span>
+                            <input type="text" name="id" placeholder="Enter Id" required />
+                        </div>
+                        <div class="input-box">
+                            <span class="details">First Name</span>
+                            <input type="text" placeholder="Enter First name" name="firstname" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Last Name</span>
+                            <input type="text" placeholder="Enter Last name" name="lastname" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Mobile Number</span>
+                            <input type="text" placeholder="Enter Mobile number" name="mobileNo" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Email</span>
+                            <input type="email" placeholder="Enter Email" name="email" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Identification Number</span>
+                            <input type="text" placeholder="Enter Identification" name="identification" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Car License Number</span>
+                            <input type="text" placeholder="Enter Car License number" name="carLicense" required/>
+                        </div>
+                    </div>
+                    <div class="button">
+                        <input type="submit" value="Register">
+                      </div>
+                </form>
+            </div>
+       
+        </div>
     </body>
 </html>

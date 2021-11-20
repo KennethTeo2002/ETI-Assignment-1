@@ -1,16 +1,26 @@
+<!DOCTYPE html>
 <html lang="en-US">
+    <head>
+        <title>Request Trip</title>
+        <link rel="stylesheet" href="css/shortform.css">
+    </head>
     <body>
-        <a href="/passenger/{{.Id}}">Return</a><br>
-        <form action="/passenger/{{.Id}}/requestTrip" method="post">
-            <h2>Trip details</h2>
-            <br>
-            <label>Pick Up postal:</label>
-            <input type="text" placeholder="Enter postal code" name="pickup" required/>
-            <br>
-            <label>Drop Off postal:</label>
-            <input type="text" placeholder="Enter postal code" name="dropoff" required/>
-            
-            <button type="submit">Go</button>
-        </form>
+        <div class="center">
+            <h1>Request Trip</h1>
+            <form action="/passenger/{{.Id}}/requestTrip" method="post">
+              <div class="txt_field">
+                <input type="text" name="id" required>
+                <span></span>
+                <label>Pick Up postal</label>
+              </div>
+              <div class="txt_field">
+                <input type="text" name="id" required>
+                <span></span>
+                <label>Drop Off postal</label>
+              </div>
+              <input type="submit" value="Find driver">
+              
+            </form>
+        </div>
     </body>
 </html>

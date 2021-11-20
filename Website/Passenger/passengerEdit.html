@@ -1,22 +1,39 @@
+<!DOCTYPE html>
 <html lang="en-US">
+    <head>
+        <title>Passenger Edit</title>
+        <link rel="stylesheet" href="css/longform.css">
+    </head>
     <body>
-        <a href="/passenger/{{.Id}}">Return</a><br>
-        <form action="/passenger/{{.Id}}/editPDetails" method="post">
-            <h2>Update details</h2>
-            <br>
-            <label>First name:</label>
-            <input type="text" placeholder="Enter First name" name="firstname" value="{{.Firstname}}" required/>
-            <br>
-            <label>Last name:</label>
-            <input type="text" placeholder="Enter Last name" name="lastname" value="{{.Lastname}}" required/>
-            <br>
-            <label>Mobile number:</label>
-            <input type="text" placeholder="Enter Mobile number" name="mobileNo" value="{{.Mobilenumber}}" required/>
-            <br>
-            <label>Email:</label>
-            <input type="text" placeholder="Enter Email" name="email" value="{{.Email}}" required/>
-            <br>
-            <button type="submit">Go</button>
-        </form>
+        <div class="container">
+            <div class="title">Edit Passenger Info</div>
+            <div class="content">
+                <form action="/passenger/{{.Id}}/editPDetails" method="post">
+                    <div class="user-details">
+                        <div class="input-box">
+                            <span class="details">First name:</span>
+                            <input type="text" placeholder="Enter First name" name="firstname" value="{{.Firstname}}" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Last name:</span>
+                            <input type="text" placeholder="Enter Last name" name="lastname" value="{{.Lastname}}" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Mobile number:</span>
+                            <input type="text" placeholder="Enter Mobile number" name="mobileNo" value="{{.Mobilenumber}}" required/>
+                        </div>
+                        <div class="input-box">
+                            <span class="details">Email:</span>
+                            <input type="text" placeholder="Enter Email" name="email" value="{{.Email}}" required/>
+                        </div>
+                    </div>
+                    <div class="button">
+                        <input type="submit" value="update">
+                    </div>
+                </form>
+             </div> 
+        </div>
+        
+            
     </body>
 </html>

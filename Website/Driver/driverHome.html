@@ -8,8 +8,11 @@
         {{.ActiveTrip.PickUp}} to
         {{.ActiveTrip.DropOff}}
         <form action="/driver/{{.Driver.Id}}" method="post">
+            {{if !.ActiveTrip.StartTime}}
             <input type="submit" name="start" value="Start Trip" />
+            {{else}}
             <input type="submit" name="end" value="End Trip" />
+            {{end}}
         </form>
 
 {{end}}

@@ -5,3 +5,5 @@
 ## Architecture diagram
 
 ## Instructions for setting up and running your microservices
+Setting up of database
+Step 1: 
