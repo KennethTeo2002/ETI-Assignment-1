@@ -205,6 +205,7 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		tripUpdate := new(tripInfo)
 		tripUpdate.Id = activeTrip.Id
+		tripUpdate.DriverID = activeTrip.DriverID
 
 		if r.FormValue("start") == "Start Trip" {
 			tripUpdate.StartTime = time.Now()
@@ -335,6 +336,7 @@ func passengerViewTrips(w http.ResponseWriter, r *http.Request) {
 		data, _ := ioutil.ReadAll(response.Body)
 		json.Unmarshal([]byte(data), &trips)
 	}
+	fmt.Println(trips)
 
 	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerViewTrip.html"))
 	tmpl.Execute(w, trips)
@@ -347,15 +349,13 @@ func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
 	} else {
 		r.ParseForm()
 		params := mux.Vars(r)
-		url := TripAPIbaseURL
 		tripData := new(tripInfo)
 		tripData.CustID = params["passengerID"]
 		tripData.PickUp = r.FormValue("pickup")
 		tripData.DropOff = r.FormValue("dropoff")
 
 		tripToAdd, _ := json.Marshal(tripData)
-
-		_, err := http.Post(url+"/passenger/"+tripData.CustID,
+		_, err := http.Post(TripAPIbaseURL+"/passenger/"+tripData.CustID,
 			"application/json", bytes.NewBuffer(tripToAdd))
 
 		if err != nil {

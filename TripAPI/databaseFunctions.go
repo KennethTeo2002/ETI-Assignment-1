@@ -33,7 +33,7 @@ func GetPassengerTrips(db *sql.DB, CustID string) ([]tripInfo, bool) {
 	results, err := db.Query(query)
 
 	if err != nil {
-		panic(err.Error()): 
+		panic(err.Error())
 	}
 	for results.Next() {
 		var trip tripInfo

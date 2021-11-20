@@ -135,6 +135,7 @@ func driverTrip(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		if driver, ok := GetAvailableDriver(db); ok {
+			ToggleDriving(db, driver.Id)
 			w.Write([]byte(driver.Id))
 		} else {
 			w.WriteHeader(http.StatusNotFound)

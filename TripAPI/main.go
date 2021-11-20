@@ -25,6 +25,16 @@ type tripInfo struct {
 	StartTime time.Time
 	EndTime   time.Time
 }
+type driverInfo struct {
+	Id             string
+	Firstname      string
+	Lastname       string
+	Mobilenumber   string
+	Email          string
+	Identification string
+	CarLicense     string
+	Driving        bool
+}
 
 /*
 func validKey(r *http.Request) bool {
@@ -51,12 +61,11 @@ func tripPassenger(w http.ResponseWriter, r *http.Request) {
 	// 	w.Write([]byte("401 - Invalid key"))
 	// 	return
 	// }
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db?parseTime=true")
 	// handle error
 	if err != nil {
 		panic(err.Error())
 	}
-
 	params := mux.Vars(r)
 
 	if r.Method == "GET" {
@@ -97,6 +106,7 @@ func tripPassenger(w http.ResponseWriter, r *http.Request) {
 					if string(data) != "" {
 						tripdetails.DriverID = string(data)
 						InsertRecord(db, tripdetails.CustID, tripdetails.DriverID, tripdetails.PickUp, tripdetails.DropOff)
+
 					}
 
 				}
@@ -118,7 +128,7 @@ func tripDriver(w http.ResponseWriter, r *http.Request) {
 	// 	w.Write([]byte("401 - Invalid key"))
 	// 	return
 	// }
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db?parseTime=true")
 	// handle error
 	if err != nil {
 		panic(err.Error())
@@ -131,8 +141,7 @@ func tripDriver(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(trip)
 
 		} else {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 - No trip active"))
+			json.NewEncoder(w).Encode(trip)
 		}
 	}
 
@@ -157,21 +166,23 @@ func tripDriver(w http.ResponseWriter, r *http.Request) {
 					EditRecord(db, tripdetails.Id, "StartTime", tripdetails.StartTime)
 				} else {
 					EditRecord(db, tripdetails.Id, "EndTime", tripdetails.EndTime)
-				}
+					jsonString := driverInfo{
+						Id: tripdetails.DriverID,
+					}
+					jsonValue, _ := json.Marshal(jsonString)
 
-				jsonValue, _ := json.Marshal(tripdetails)
+					request, _ := http.NewRequest(http.MethodPut,
+						DriverAPIbaseURL+"trip",
+						bytes.NewBuffer(jsonValue))
 
-				request, _ := http.NewRequest(http.MethodPut,
-					DriverAPIbaseURL+"trip",
-					bytes.NewBuffer(jsonValue))
+					request.Header.Set("Content-Type", "application/json")
 
-				request.Header.Set("Content-Type", "application/json")
+					client := &http.Client{}
+					_, err := client.Do(request)
 
-				client := &http.Client{}
-				_, err := client.Do(request)
-
-				if err != nil {
-					fmt.Printf("The HTTP request failed with error %s\n", err)
+					if err != nil {
+						fmt.Printf("The HTTP request failed with error %s\n", err)
+					}
 				}
 
 			}

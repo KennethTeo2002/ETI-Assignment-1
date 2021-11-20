@@ -11,20 +11,20 @@
                 <form action="/passenger/{{.Id}}/editPDetails" method="post">
                     <div class="user-details">
                         <div class="input-box">
-                            <span class="details">First name:</span>
+                            <span class="details">First Name</span>
                             <input type="text" placeholder="Enter First name" name="firstname" value="{{.Firstname}}" required/>
                         </div>
                         <div class="input-box">
-                            <span class="details">Last name:</span>
+                            <span class="details">Last Name</span>
                             <input type="text" placeholder="Enter Last name" name="lastname" value="{{.Lastname}}" required/>
                         </div>
                         <div class="input-box">
-                            <span class="details">Mobile number:</span>
+                            <span class="details">Mobile Number</span>
                             <input type="text" placeholder="Enter Mobile number" name="mobileNo" value="{{.Mobilenumber}}" required/>
                         </div>
                         <div class="input-box">
-                            <span class="details">Email:</span>
-                            <input type="text" placeholder="Enter Email" name="email" value="{{.Email}}" required/>
+                            <span class="details">Email</span>
+                            <input type="email" placeholder="Enter Email" name="email" value="{{.Email}}" required/>
                         </div>
                     </div>
                     <div class="button">
