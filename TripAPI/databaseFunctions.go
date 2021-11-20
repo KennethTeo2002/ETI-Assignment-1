@@ -29,20 +29,20 @@ func EditRecord(db *sql.DB, ID string, varTime string, setTime time.Time) {
 
 func GetPassengerTrips(db *sql.DB, CustID string) ([]tripInfo, bool) {
 	var trips []tripInfo
-	query := fmt.Sprintf("Select * FROM trip_db.Trips WHERE CustomerID = '%s'", CustID)
+	query := fmt.Sprintf("Select * FROM trip_db.Trips WHERE CustomerID = '%s' ORDER BY EndTime DESC", CustID)
 	results, err := db.Query(query)
 
 	if err != nil {
-		panic(err.Error())
+		panic(err.Error()): 
 	}
 	for results.Next() {
 		var trip tripInfo
 		err = results.Scan(&trip.Id, &trip.CustID, &trip.DriverID, &trip.PickUp, &trip.DropOff, &trip.StartTime, &trip.EndTime)
 		if err != nil {
 			panic(err.Error())
+
 		}
-		fmt.Println(trip.Id, trip.CustID,
-			trip.DriverID)
+
 		trips = append(trips, trip)
 
 	}
