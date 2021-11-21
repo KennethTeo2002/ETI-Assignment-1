@@ -53,14 +53,12 @@ var passenger passengerInfo
 var driver driverInfo
 var activeTrip tripInfo
 
-// Webpages
 func homePage(w http.ResponseWriter, r *http.Request) {
-
 	tmpl := template.Must(template.ParseFiles("Website/homepage.html"))
-
 	tmpl.Execute(w, nil)
 }
 
+// Passenger webpages
 func passengerHome(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -81,6 +79,7 @@ func passengerHome(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, passenger)
 
 }
+
 func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerEdit.html"))
@@ -117,6 +116,7 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
+
 func passengerLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerLogin.html"))
@@ -162,6 +162,56 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func passengerViewTrips(w http.ResponseWriter, r *http.Request) {
+	// todo: get trip array from trip api
+	params := mux.Vars(r)
+	url := PassengerAPIbaseURL
+	passengerID := params["passengerID"]
+	if passengerID != "" {
+		url = TripAPIbaseURL + "/passenger/" + passengerID
+	}
+	response, err := http.Get(url)
+	var trips []tripInfo
+	if err != nil {
+		fmt.Printf("The HTTP request failed with error %s\n", err)
+	} else {
+		data, _ := ioutil.ReadAll(response.Body)
+		json.Unmarshal([]byte(data), &trips)
+	}
+	fmt.Println(trips)
+
+	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerViewTrip.html"))
+	tmpl.Execute(w, trips)
+}
+
+func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerRequestTrip.html"))
+		tmpl.Execute(w, passenger)
+	} else {
+		r.ParseForm()
+		params := mux.Vars(r)
+		tripData := new(tripInfo)
+		tripData.CustID = params["passengerID"]
+		tripData.PickUp = r.FormValue("pickup")
+		tripData.DropOff = r.FormValue("dropoff")
+
+		tripToAdd, _ := json.Marshal(tripData)
+		_, err := http.Post(TripAPIbaseURL+"/passenger/"+tripData.CustID,
+			"application/json", bytes.NewBuffer(tripToAdd))
+
+		if err != nil {
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			redirectURL := fmt.Sprintf("/passenger/%s", tripData.CustID)
+
+			http.Redirect(w, r, redirectURL, http.StatusFound)
+
+		}
+	}
+}
+
+// Driver webpages
 func driverHome(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		params := mux.Vars(r)
@@ -318,56 +368,6 @@ func driverSignup(w http.ResponseWriter, r *http.Request) {
 
 		}
 	}
-}
-
-func passengerViewTrips(w http.ResponseWriter, r *http.Request) {
-	// todo: get trip array from trip api
-	params := mux.Vars(r)
-	url := PassengerAPIbaseURL
-	passengerID := params["passengerID"]
-	if passengerID != "" {
-		url = TripAPIbaseURL + "/passenger/" + passengerID
-	}
-	response, err := http.Get(url)
-	var trips []tripInfo
-	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
-	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		json.Unmarshal([]byte(data), &trips)
-	}
-	fmt.Println(trips)
-
-	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerViewTrip.html"))
-	tmpl.Execute(w, trips)
-}
-
-func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerRequestTrip.html"))
-		tmpl.Execute(w, passenger)
-	} else {
-		r.ParseForm()
-		params := mux.Vars(r)
-		tripData := new(tripInfo)
-		tripData.CustID = params["passengerID"]
-		tripData.PickUp = r.FormValue("pickup")
-		tripData.DropOff = r.FormValue("dropoff")
-
-		tripToAdd, _ := json.Marshal(tripData)
-		_, err := http.Post(TripAPIbaseURL+"/passenger/"+tripData.CustID,
-			"application/json", bytes.NewBuffer(tripToAdd))
-
-		if err != nil {
-			fmt.Printf("The HTTP request failed with error %s\n", err)
-		} else {
-			redirectURL := fmt.Sprintf("/passenger/%s", tripData.CustID)
-
-			http.Redirect(w, r, redirectURL, http.StatusFound)
-
-		}
-	}
-
 }
 
 // main

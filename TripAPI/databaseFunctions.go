@@ -17,7 +17,7 @@ func InsertRecord(db *sql.DB, CustID string, DriverID string, PickupLoc string, 
 	}
 }
 
-func EditRecord(db *sql.DB, ID string, varTime string, setTime time.Time) {
+func EditRecord(db *sql.DB, ID string, varTime string, setTime *time.Time) {
 	query := fmt.Sprintf(
 		"UPDATE Trips SET %s = now() WHERE ID = '%s'",
 		varTime, ID)
@@ -61,7 +61,6 @@ func GetDriverTrips(db *sql.DB, DriverID string) (tripInfo, bool) {
 			return trip, false
 		}
 	}
-
 	return trip, true
 
 }

@@ -1,8 +1,9 @@
+
 <h1>Trip History</h1>
 {{range .}}
 <div>
     <h2>{{.Id}}</h2>
-    <p>{{.DriverID}}</p><p>{{.PickUp}}</p><p>{{.DropOff}}</p><p>{{.StartTime}}</p><p>{{.EndTime}}</p>
+    <p>{{.DriverID}} {{.PickUp}} {{.DropOff}} {{.StartTime}} {{.EndTime}}</p>
 </div>
 {{else}}
 no trips recorded

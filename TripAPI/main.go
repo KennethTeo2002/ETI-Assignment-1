@@ -22,8 +22,8 @@ type tripInfo struct {
 	DriverID  string
 	PickUp    string
 	DropOff   string
-	StartTime time.Time
-	EndTime   time.Time
+	StartTime *time.Time
+	EndTime   *time.Time
 }
 type driverInfo struct {
 	Id             string
