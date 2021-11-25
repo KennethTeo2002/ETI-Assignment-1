@@ -1,8 +1,40 @@
-<h1>Welcome {{.Firstname}}</h1>
-<a href="/">Logout</a>
-<br>
-<a href="/passenger/{{.Id}}/editPDetails">Edit details</a>
-<br>
-<a href="/passenger/{{.Id}}/viewTrips">View Trip History</a>
-<br>
-<a href="/passenger/{{.Id}}/requestTrip">Request Trip</a>
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Passenger Home</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/general.css" />
+  </head>
+  <body>
+    <h1>Welcome {{.Firstname}} {{.Lastname}}</h1>
+    <div>
+      <a href="/" class="button" style="vertical-align: middle"
+        ><span>Logout</span></a
+      >
+      <a
+        href="/passenger/editPDetails"
+        class="button"
+        style="vertical-align: middle"
+        ><span>Edit details</span></a
+      >
+      <a
+        href="/passenger/viewTrips"
+        class="button"
+        style="vertical-align: middle"
+        ><span>View Trip History</span></a
+      >
+      <a
+        href="/passenger/requestTrip"
+        class="button"
+        style="vertical-align: middle"
+        ><span>Request Trip</span></a
+      >
+      <a
+        href="/passenger/deleteAccount"
+        class="button"
+        style="vertical-align: middle"
+        ><span>Delete account</span></a
+      >
+    </div>
+  </body>
+</html>

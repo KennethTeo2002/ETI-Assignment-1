@@ -14,6 +14,7 @@ import (
 
 type driverInfo struct {
 	Id             string
+	Password string
 	Firstname      string
 	Lastname       string
 	Mobilenumber   string
@@ -23,31 +24,29 @@ type driverInfo struct {
 	Driving        bool
 }
 
-/*
-func validKey(r *http.Request) bool {
-	v := r.URL.Query()
-	if key, ok := v["key"]; ok {
-		if key[0] == "2c78afaf-97da-4816-bbee-9ad239abb296" {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		return false
-	}
-}
-*/
-
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Driver REST API!")
 }
 
+func validPassword(r *http.Request, db *sql.DB ,id string ) bool {
+    v := r.URL.Query()
+    if password, ok := v["password"]; ok {
+		if driver, ok := GetRecords(db, id); ok {
+			if password[0] == driver.Password {
+				return true
+			}else{
+				return false
+			}
+		} else {
+			return false
+		}
+    } else {
+        return false
+    }
+}
+
 func driver(w http.ResponseWriter, r *http.Request) {
-	// if !validKey(r) {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	w.Write([]byte("401 - Invalid key"))
-	// 	return
-	// }
+	
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
 
 	// handle error
@@ -57,9 +56,14 @@ func driver(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
+	if !validPassword(r,db,params["driverID"]) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid login"))
+		return
+	}
+
 	if r.Method == "GET" {
 		if driver, ok := GetRecords(db, params["driverID"]); ok {
-
 			json.NewEncoder(w).Encode(driver)
 
 		} else {
@@ -67,6 +71,11 @@ func driver(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("404 - No driver found"))
 		}
 	}
+	
+	if r.Method == "DELETE" {
+        w.WriteHeader(http.StatusForbidden)
+        w.Write([]byte("Unable to delete due to auditing reasons"))
+    }
 
 	if r.Header.Get("Content-type") == "application/json" {
 		var newdriver driverInfo
@@ -88,7 +97,7 @@ func driver(w http.ResponseWriter, r *http.Request) {
 				// check if course exists; add only if
 				// course does not exist
 				if _, ok := GetRecords(db, params["driverID"]); !ok {
-					InsertRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
+					InsertRecord(db, newdriver.Id, newdriver.Password, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
 
 				} else {
 					w.WriteHeader(http.StatusConflict)

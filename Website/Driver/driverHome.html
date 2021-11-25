@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="en-US">
-    <head>
-        <title>Passenger Edit</title>
-        <base href="/">
-        <!--<link rel="stylesheet" href="css/longform.css">-->
-    </head>
-    <body>
-        <h1>Welcome {{.Driver.Firstname}} {{.Driver.Lastname}}</h1>
-        <a href="/">Logout</a>
-        <br>
-        <a href="/driver/{{.Driver.Id}}/editDDetails">Edit details</a>
-        {{if .ActiveTrip.Id}}
-            <h2>Active Trip</h2>
-                Request to travel from 
-                {{.ActiveTrip.PickUp}} to
-                {{.ActiveTrip.DropOff}}
-                <form action="/driver/{{.Driver.Id}}" method="post">
-                    {{if .ActiveTrip.StartTime.IsZero}}
-                    <input type="submit" name="start" value="Start Trip" />
-                    {{else}}
-                    <input type="submit" name="end" value="End Trip" />
-                   
-                    {{end}}
-                </form>
-        
-        {{end}}
-    </body>
-</html> 
+  <head>
+    <title>Driver Home</title>
+    <base href="/" />
+    <!--<link rel="stylesheet" href="css/longform.css">-->
+  </head>
+  <body>
+    <h1>Welcome {{.Driver.Firstname}} {{.Driver.Lastname}}</h1>
+    <a href="/">Logout</a>
+    <br />
+    <a href="/driver/editDDetails">Edit details</a>
+    <a
+      href="/driver/deleteAccount"
+      class="button"
+      style="vertical-align: middle"
+      ><span>Delete account</span></a
+    >
+    {{if .ActiveTrip.Id}}
+    <h2>Active Trip</h2>
+    Request to travel from {{.ActiveTrip.PickUp}} to {{.ActiveTrip.DropOff}}
+    <form action="/driver" method="post">
+      {{if .ActiveTrip.StartTime.IsZero}}
+      <input type="submit" name="start" value="Start Trip" />
+      {{else}}
+      <input type="submit" name="end" value="End Trip" />
+
+      {{end}}
+    </form>
+
+    {{end}}
+  </body>
+</html>

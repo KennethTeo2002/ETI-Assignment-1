@@ -1,10 +1,17 @@
-
-<h1>Trip History</h1>
-{{range .}}
-<div>
-    <h2>{{.Id}}</h2>
-    <p>{{.DriverID}} {{.PickUp}} {{.DropOff}} {{.StartTime}} {{.EndTime}}</p>
-</div>
-{{else}}
-no trips recorded
-{{end}}
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Trip History</title>
+    <base href="/" />
+    <!--<link rel="stylesheet" href="css/longform.css">-->
+  </head>
+  <body>
+    <h1>View Trip History</h1>
+    {{range .}}
+    <div>
+      <h2>{{.Id}}</h2>
+      <p>{{.DriverID}} {{.PickUp}} {{.DropOff}} {{.StartTime}} {{.EndTime}}</p>
+    </div>
+    {{else}} no trips recorded {{end}}
+  </body>
+</html>

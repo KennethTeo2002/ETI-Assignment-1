@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"time"
 )
 
 func InsertRecord(db *sql.DB, CustID string, DriverID string, PickupLoc string, DropoffLoc string) {
@@ -17,7 +16,7 @@ func InsertRecord(db *sql.DB, CustID string, DriverID string, PickupLoc string, 
 	}
 }
 
-func EditRecord(db *sql.DB, ID string, varTime string, setTime *time.Time) {
+func EditRecord(db *sql.DB, ID string, varTime string) {
 	query := fmt.Sprintf(
 		"UPDATE Trips SET %s = now() WHERE ID = '%s'",
 		varTime, ID)
@@ -29,7 +28,7 @@ func EditRecord(db *sql.DB, ID string, varTime string, setTime *time.Time) {
 
 func GetPassengerTrips(db *sql.DB, CustID string) ([]tripInfo, bool) {
 	var trips []tripInfo
-	query := fmt.Sprintf("Select * FROM trip_db.Trips WHERE CustomerID = '%s' ORDER BY EndTime DESC", CustID)
+	query := fmt.Sprintf("Select * FROM trip_db.Trips WHERE CustomerID = '%s' ORDER BY EndTime IS NULL DESC,EndTime DESC", CustID)
 	results, err := db.Query(query)
 
 	if err != nil {

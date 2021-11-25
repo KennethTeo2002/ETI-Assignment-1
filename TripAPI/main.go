@@ -163,9 +163,9 @@ func tripDriver(w http.ResponseWriter, r *http.Request) {
 			// PUT updates trip details
 			if r.Method == "PUT" {
 				if !tripdetails.StartTime.IsZero() {
-					EditRecord(db, tripdetails.Id, "StartTime", tripdetails.StartTime)
+					EditRecord(db, tripdetails.Id, "StartTime")
 				} else {
-					EditRecord(db, tripdetails.Id, "EndTime", tripdetails.EndTime)
+					EditRecord(db, tripdetails.Id, "EndTime")
 					jsonString := driverInfo{
 						Id: tripdetails.DriverID,
 					}

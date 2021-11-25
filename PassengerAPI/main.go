@@ -14,37 +14,36 @@ import (
 
 type passengerInfo struct {
 	Id           string
+	Password string
 	Firstname    string
 	Lastname     string
 	Mobilenumber string
 	Email        string
 }
 
-/*
-func validKey(r *http.Request) bool {
-	v := r.URL.Query()
-	if key, ok := v["key"]; ok {
-		if key[0] == "2c78afaf-97da-4816-bbee-9ad239abb296" {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		return false
-	}
-}
-*/
 
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Passenger REST API!")
 }
 
+func validPassword(r *http.Request, db *sql.DB ,id string ) bool {
+    v := r.URL.Query()
+    if password, ok := v["password"]; ok {
+		if passenger, ok := GetRecords(db, id); ok {
+			if password[0] == passenger.Password {
+				return true
+			}else{
+				return false
+			}
+		} else {
+			return false
+		}
+    } else {
+        return false
+    }
+}
+
 func passenger(w http.ResponseWriter, r *http.Request) {
-	// if !validKey(r) {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	w.Write([]byte("401 - Invalid key"))
-	// 	return
-	// }
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/passenger_db")
 
 	// handle error
@@ -53,6 +52,12 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
+
+	if !validPassword(r,db,params["passengerID"]) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid login"))
+		return
+	}
 
 	if r.Method == "GET" {
 		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
@@ -63,6 +68,11 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("404 - No passenger found"))
 		}
 	}
+	if r.Method == "DELETE" {
+        w.WriteHeader(http.StatusForbidden)
+        w.Write([]byte("Unable to delete due to auditing reasons"))
+    }
+
 
 	if r.Header.Get("Content-type") == "application/json" {
 		var newpassenger passengerInfo
@@ -84,7 +94,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 				// check if course exists; add only if
 				// course does not exist
 				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+					InsertRecord(db, newpassenger.Id, newpassenger.Password,newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
 				} else {
 					w.WriteHeader(http.StatusConflict)
@@ -97,7 +107,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "PUT" {
 
 				if _, ok := GetRecords(db, params["passengerID"]); !ok {
-					InsertRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
+					InsertRecord(db, newpassenger.Id, newpassenger.Password, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
 				} else {
 					// update passenger
@@ -121,8 +131,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/passenger", home)
 	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(
-		"GET", "PUT", "POST")
-
+		"GET", "PUT", "POST","DELETE")
 	fmt.Println("Listening at port 5000")
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
