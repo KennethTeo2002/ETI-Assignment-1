@@ -53,13 +53,14 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	if !validPassword(r,db,params["passengerID"]) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("401 - Invalid login"))
-		return
-	}
+	
 
 	if r.Method == "GET" {
+		if !validPassword(r,db,params["passengerID"]) {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("401 - Invalid credentials"))
+			return
+		}
 		if passenger, ok := GetRecords(db, params["passengerID"]); ok {
 			json.NewEncoder(w).Encode(passenger)
 
@@ -91,8 +92,8 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			}
 			// POST is for creating new passenger
 			if r.Method == "POST" {
-				// check if course exists; add only if
-				// course does not exist
+				// check if passenger exists; add only if
+				// passenger does not exist
 				if _, ok := GetRecords(db, params["passengerID"]); !ok {
 					InsertRecord(db, newpassenger.Id, newpassenger.Password,newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
@@ -105,7 +106,11 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			//---PUT is for creating or updating
 			// existing passenger---
 			if r.Method == "PUT" {
-
+				if !validPassword(r,db,params["passengerID"]) {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write([]byte("401 - Invalid credentials"))
+					return
+				}
 				if _, ok := GetRecords(db, params["passengerID"]); !ok {
 					InsertRecord(db, newpassenger.Id, newpassenger.Password, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
 
@@ -127,7 +132,6 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/passenger", home)
 	router.HandleFunc("/api/v1/passenger/{passengerID}", passenger).Methods(

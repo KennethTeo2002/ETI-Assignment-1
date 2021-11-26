@@ -32,6 +32,7 @@ func validPassword(r *http.Request, db *sql.DB ,id string ) bool {
     v := r.URL.Query()
     if password, ok := v["password"]; ok {
 		if driver, ok := GetRecords(db, id); ok {
+			fmt.Println(password[0], driver.Password)
 			if password[0] == driver.Password {
 				return true
 			}else{
@@ -56,13 +57,15 @@ func driver(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	if !validPassword(r,db,params["driverID"]) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("401 - Invalid login"))
-		return
-	}
+	
 
 	if r.Method == "GET" {
+		if !validPassword(r,db,params["driverID"]) {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("401 - Invalid credentials"))
+			return
+		}
+
 		if driver, ok := GetRecords(db, params["driverID"]); ok {
 			json.NewEncoder(w).Encode(driver)
 
@@ -108,6 +111,11 @@ func driver(w http.ResponseWriter, r *http.Request) {
 			//---PUT is for creating or updating
 			// existing passenger---
 			if r.Method == "PUT" {
+				if !validPassword(r,db,params["driverID"]) {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write([]byte("401 - Invalid credentials"))
+					return
+				}
 				missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.CarLicense == ""
 				if missingValues {
 					w.WriteHeader(

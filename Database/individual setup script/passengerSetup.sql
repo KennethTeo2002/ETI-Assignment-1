@@ -12,11 +12,11 @@ USE passenger_db;
 
 
 
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0001", "password", "Cannerf", "Back", "11111111", "bosspro2002@gmail.com");
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0002", "password", "Kleb", "banana", "22222222", "clapfruit@gmail.com");
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0003", "password", "Oh hak", "eews", "33333333", "jaycemain@hotmail.com");
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0004", "password", "Neinhility", "rart", "44444444", "nine9nein@gmail.com");
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0005", "password", "Axie", "OOF", "55555555", "oofer@hotmail.com");
-INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0006", "password", "Canshiryou", "The", "66666666", "overflowprez@gmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0001", "password", "Cannerf", "Back", "11111111", "bosspro2002@gmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0002", "password1", "Kleb", "banana", "22222222", "clapfruit@gmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0003", "password2", "Oh hak", "eews", "33333333", "jaycemain@hotmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0004", "password3", "Neinhility", "rart", "44444444", "nine9nein@gmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0005", "password4", "Axie", "OOF", "55555555", "oofer@hotmail.com");
+-- INSERT INTO Passengers (ID, Password, FirstName, LastName, MobileNumber,EmailAddress) VALUES ("0006", "password5", "Canshiryou", "The", "66666666", "overflowprez@gmail.com");
 
 SELECT * FROM Passengers;

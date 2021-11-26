@@ -77,8 +77,15 @@ func passengerUpdateCookie(id string, password string){
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		json.Unmarshal([]byte(data), &passenger)
+		if response.StatusCode == http.StatusNotFound{
+			passenger = passengerInfo{}
+			// todo: alert passenger details not found
+
+		}else{
+			data, _ := ioutil.ReadAll(response.Body)
+			json.Unmarshal([]byte(data), &passenger)
+		}
+		
 	}
 }
 
@@ -115,14 +122,20 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 
 		passengerToAdd, _ := json.Marshal(passengerData)
 
-		_, err := http.Post(url+"/"+passengerData.Id+ "?password=" + passengerData.Password,
+		response, err := http.Post(url+"/"+passengerData.Id+ "?password=" + passengerData.Password,
 			"application/json", bytes.NewBuffer(passengerToAdd))
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			passengerUpdateCookie(passengerData.Id,passengerData.Password)
-			http.Redirect(w, r, "/passenger", http.StatusFound)
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK {
+				_=string(data)
+				//todo alert passenger duplicate
+			}else{
+				passengerUpdateCookie(passengerData.Id,passengerData.Password)
+				http.Redirect(w, r, "/passenger", http.StatusFound)
+			}
 		}
 	}
 }
@@ -150,13 +163,19 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 		request.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
-		_, err := client.Do(request)
+		response, err := client.Do(request)
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			passengerUpdateCookie(passenger.Id,passenger.Password)
-			http.Redirect(w, r, "/passenger", http.StatusFound)
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK {
+				_=string(data)
+				//todo alert failed to edit
+			}else{
+				passengerUpdateCookie(passenger.Id,passenger.Password)
+				http.Redirect(w, r, "/passenger", http.StatusFound)
+			}
 		}
 	}
 }
@@ -193,14 +212,20 @@ func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
 		tripData.DropOff = r.FormValue("dropoff")
 
 		tripToAdd, _ := json.Marshal(tripData)
-		_, err := http.Post(TripAPIbaseURL+"/passenger/"+tripData.CustID,
+		response, err := http.Post(TripAPIbaseURL+"/passenger/"+tripData.CustID,
 			"application/json", bytes.NewBuffer(tripToAdd))
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK{
+				// display alert msg
+				_=string(data)
+			}else{
+				http.Redirect(w, r, "/passenger", http.StatusFound)
+			}
 			
-			http.Redirect(w, r, "/passenger", http.StatusFound)
 
 		}
 	}
@@ -236,7 +261,7 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 			Driver:     driver,
 			ActiveTrip: activeTrip,
 		}
-
+		fmt.Println(pageData)
 		tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
 
 		tmpl.Execute(w, pageData)
@@ -261,14 +286,20 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 		request.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
-		_, err := client.Do(request)
+		response, err := client.Do(request)
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK{
+				// display alert msg
+				_=string(data)
+				
+			}else{
 			driverUpdateCookie(driver.Id,driver.Password)
 			http.Redirect(w, r, "/driver", http.StatusFound)
+			}
 
 		}
 
@@ -276,7 +307,6 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 
 }
 func driverUpdateCookie(id string, password string){
-	
 	url := DriverAPIbaseURL
 	if id != "" && password != "" {
 		url = DriverAPIbaseURL + "/" + id + "?password=" + password
@@ -288,7 +318,13 @@ func driverUpdateCookie(id string, password string){
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
-		json.Unmarshal([]byte(data), &driver)
+		if response.StatusCode != http.StatusOK{
+			driver = driverInfo{}
+			// display alert msg
+			_=string(data)
+		}else{
+			json.Unmarshal([]byte(data), &driver)
+		}
 
 	}
 
@@ -301,7 +337,13 @@ func driverUpdateCookie(id string, password string){
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
 		data, _ := ioutil.ReadAll(responsetrip.Body)
-		json.Unmarshal([]byte(data), &activeTrip)
+		if responsetrip.StatusCode != http.StatusOK{
+			activeTrip = tripInfo{}
+			// display alert msg
+			_=string(data)
+		}else{
+			json.Unmarshal([]byte(data), &activeTrip)
+		}
 	}
 }
 
@@ -340,15 +382,20 @@ func driverSignup(w http.ResponseWriter, r *http.Request) {
 
 		driverToAdd, _ := json.Marshal(driverData)
 
-		_, err := http.Post(url+"/"+driverData.Id,
+		response, err := http.Post(url+"/"+driverData.Id,
 			"application/json", bytes.NewBuffer(driverToAdd))
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			driverUpdateCookie(driverData.Id,driverData.Password)
-
-			http.Redirect(w, r, "/driver", http.StatusFound)
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK{
+				// display alert msg
+				_=string(data)
+			}else{
+				driverUpdateCookie(driverData.Id,driverData.Password)
+				http.Redirect(w, r, "/driver", http.StatusFound)
+			}
 
 		}
 	}
@@ -363,6 +410,7 @@ func driverEditDetails(w http.ResponseWriter, r *http.Request) {
 		url := DriverAPIbaseURL
 		driverData := new(driverInfo)
 		driverData.Id = driver.Id
+		driverData.Password = driver.Password
 		driverData.Firstname = r.FormValue("firstname")
 		driverData.Lastname = r.FormValue("lastname")
 		driverData.Mobilenumber = r.FormValue("mobileNo")
@@ -371,21 +419,27 @@ func driverEditDetails(w http.ResponseWriter, r *http.Request) {
 		driverToUpdate, _ := json.Marshal(driverData)
 
 		request, _ := http.NewRequest(http.MethodPut,
-			url+"/"+driver.Id,
+			url+"/"+driver.Id + "?password=" + driver.Password,
 			bytes.NewBuffer(driverToUpdate))
 
 		request.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
-		_, err := client.Do(request)
+		response, err := client.Do(request)
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
+			fmt.Println( response.StatusCode)
+			data, _ := ioutil.ReadAll(response.Body)
+			if response.StatusCode != http.StatusOK{
+				// display alert msg
+				_=string(data)
+			}else{
+				driverUpdateCookie(driver.Id,driver.Password)
 
-			driverUpdateCookie(driver.Id,driver.Password)
-
-			http.Redirect(w, r, "/driver", http.StatusFound)
+				http.Redirect(w, r, "/driver", http.StatusFound)
+			}
 		}
 
 	}
@@ -404,7 +458,10 @@ func driverDeleteAccount(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
-		if response.StatusCode == http.StatusNotFound{
+		data, _ := ioutil.ReadAll(response.Body)
+		if response.StatusCode != http.StatusOK{
+			// display alert msg
+			_=string(data)
 			http.Redirect(w, r, "/driver", http.StatusFound)
 		}else{
 			http.Redirect(w, r, "/driverLogin", http.StatusOK)

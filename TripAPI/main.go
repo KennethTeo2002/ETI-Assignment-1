@@ -123,11 +123,7 @@ func tripPassenger(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func tripDriver(w http.ResponseWriter, r *http.Request) {
-	// if !validKey(r) {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	w.Write([]byte("401 - Invalid key"))
-	// 	return
-	// }
+	
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db?parseTime=true")
 	// handle error
 	if err != nil {

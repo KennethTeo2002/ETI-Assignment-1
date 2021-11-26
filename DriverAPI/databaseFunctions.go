@@ -29,7 +29,7 @@ func EditRecord(db *sql.DB, ID string, FN string, LN string, MobileNumber string
 func GetRecords(db *sql.DB, ID string) (driverInfo, bool) {
 	var driver driverInfo
 	query := fmt.Sprintf("Select * FROM driver_db.Drivers WHERE ID = '%s' ", ID)
-	if err := db.QueryRow(query).Scan(&driver.Id, &driver.Firstname,
+	if err := db.QueryRow(query).Scan(&driver.Id,&driver.Password, &driver.Firstname,
 		&driver.Lastname, &driver.Mobilenumber, &driver.Email, &driver.Identification, &driver.CarLicense, &driver.Driving); err != nil {
 		if err == sql.ErrNoRows {
 			return driver, false
@@ -41,7 +41,7 @@ func GetRecords(db *sql.DB, ID string) (driverInfo, bool) {
 
 func GetAvailableDriver(db *sql.DB) (driverInfo, bool) {
 	var driver driverInfo
-	if err := db.QueryRow("Select * FROM driver_db.Drivers WHERE Driving = false").Scan(&driver.Id, &driver.Firstname,
+	if err := db.QueryRow("Select * FROM driver_db.Drivers WHERE Driving = false").Scan(&driver.Id,&driver.Password, &driver.Firstname,
 		&driver.Lastname, &driver.Mobilenumber, &driver.Email, &driver.Identification, &driver.CarLicense, &driver.Driving); err != nil {
 		if err == sql.ErrNoRows {
 			return driver, false
