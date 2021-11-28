@@ -60,14 +60,18 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+func errorPage(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("Website/errorpage.html"))
+	tmpl.Execute(w, nil)
+}
+
 // Passenger webpages
 func passengerHome(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("Website/Passenger/passengerHome.html"))
-
 	tmpl.Execute(w, passenger)
 }
 
-func passengerUpdateCookie(id string, password string){
+func passengerUpdateCookie(id string, password string)bool{
 	url:= PassengerAPIbaseURL
 	if id != "" && password != ""  {
 		url = PassengerAPIbaseURL + "/" + id + "?password=" + password
@@ -77,16 +81,16 @@ func passengerUpdateCookie(id string, password string){
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
-		if response.StatusCode == http.StatusNotFound{
+		if response.StatusCode != http.StatusOK{
 			passenger = passengerInfo{}
-			// todo: alert passenger details not found
-
 		}else{
 			data, _ := ioutil.ReadAll(response.Body)
 			json.Unmarshal([]byte(data), &passenger)
+			return true
 		}
 		
 	}
+	return false
 }
 
 func passengerLogin(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +102,13 @@ func passengerLogin(w http.ResponseWriter, r *http.Request) {
 		id := r.FormValue("id")
 		password := r.FormValue("password")
 
-		passengerUpdateCookie(id,password)
-		http.Redirect(w, r, "/passenger", http.StatusFound)
+		success := passengerUpdateCookie(id,password)
+		if success{
+			http.Redirect(w, r, "/passenger", http.StatusFound)
+		}else{
+			http.Redirect(w, r, "/error", http.StatusFound)
+		}
+		
 
 	}
 }
@@ -128,13 +137,15 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK {
-				_=string(data)
-				//todo alert passenger duplicate
+				http.Redirect(w, r, "/error", http.StatusFound)
 			}else{
-				passengerUpdateCookie(passengerData.Id,passengerData.Password)
-				http.Redirect(w, r, "/passenger", http.StatusFound)
+				success := passengerUpdateCookie(passengerData.Id,passengerData.Password)
+				if success{
+					http.Redirect(w, r, "/passenger", http.StatusFound)
+				}else{
+					http.Redirect(w, r, "/error", http.StatusFound)
+				}
 			}
 		}
 	}
@@ -168,20 +179,21 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK {
-				_=string(data)
-				//todo alert failed to edit
+				http.Redirect(w, r, "/error", http.StatusFound)
 			}else{
-				passengerUpdateCookie(passenger.Id,passenger.Password)
-				http.Redirect(w, r, "/passenger", http.StatusFound)
+				success := passengerUpdateCookie(passenger.Id,passenger.Password)
+				if success{
+					http.Redirect(w, r, "/passenger", http.StatusFound)
+				}else{
+					http.Redirect(w, r, "/error", http.StatusFound)
+				}
 			}
 		}
 	}
 }
 
 func passengerViewTrips(w http.ResponseWriter, r *http.Request) {	
-	// todo: get trip array from trip api
 	url := PassengerAPIbaseURL
 	passengerID := passenger.Id
 	if passengerID != "" {
@@ -218,15 +230,11 @@ func passengerRequestTrip(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK{
-				// display alert msg
-				_=string(data)
+				http.Redirect(w, r, "/error", http.StatusFound)
 			}else{
 				http.Redirect(w, r, "/passenger", http.StatusFound)
 			}
-			
-
 		}
 	}
 }
@@ -241,15 +249,11 @@ func passengerDeleteAccount(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
-		data, _ := ioutil.ReadAll(response.Body)
 		if response.StatusCode != http.StatusOK{
-			// display alert msg
-			_=string(data)
-			http.Redirect(w, r, "/passenger", http.StatusNotModified)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		}else{
 			http.Redirect(w, r, "/passengerLogin", http.StatusFound)
 		}
-        
     }
 }
 
@@ -261,7 +265,6 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 			Driver:     driver,
 			ActiveTrip: activeTrip,
 		}
-		fmt.Println(pageData)
 		tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
 
 		tmpl.Execute(w, pageData)
@@ -291,14 +294,16 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK{
-				// display alert msg
-				_=string(data)
+				http.Redirect(w, r, "/error", http.StatusFound)
 				
 			}else{
-			driverUpdateCookie(driver.Id,driver.Password)
-			http.Redirect(w, r, "/driver", http.StatusFound)
+				success := driverUpdateCookie(driver.Id,driver.Password)
+				if success{
+					http.Redirect(w, r, "/driver", http.StatusFound)
+				}else{
+					http.Redirect(w, r, "/error", http.StatusFound)
+				}
 			}
 
 		}
@@ -306,7 +311,9 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func driverUpdateCookie(id string, password string){
+func driverUpdateCookie(id string, password string)bool{
+	driverSuccess := false
+
 	url := DriverAPIbaseURL
 	if id != "" && password != "" {
 		url = DriverAPIbaseURL + "/" + id + "?password=" + password
@@ -324,6 +331,7 @@ func driverUpdateCookie(id string, password string){
 			_=string(data)
 		}else{
 			json.Unmarshal([]byte(data), &driver)
+			driverSuccess = true
 		}
 
 	}
@@ -345,6 +353,7 @@ func driverUpdateCookie(id string, password string){
 			json.Unmarshal([]byte(data), &activeTrip)
 		}
 	}
+	return driverSuccess
 }
 
 func driverLogin(w http.ResponseWriter, r *http.Request) {
@@ -356,8 +365,13 @@ func driverLogin(w http.ResponseWriter, r *http.Request) {
 		id := r.FormValue("id")
 		password := r.FormValue("password")
 
-		driverUpdateCookie(id,password)
-		http.Redirect(w, r, "/driver", http.StatusFound)
+		success := driverUpdateCookie(id,password)
+		if success{
+			http.Redirect(w, r, "/driver", http.StatusFound)
+		}else{
+			http.Redirect(w, r, "/error", http.StatusFound)
+		}
+		
 
 	}
 }
@@ -388,13 +402,15 @@ func driverSignup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK{
-				// display alert msg
-				_=string(data)
+				http.Redirect(w, r, "/error", http.StatusFound)
 			}else{
-				driverUpdateCookie(driverData.Id,driverData.Password)
-				http.Redirect(w, r, "/driver", http.StatusFound)
+				success := driverUpdateCookie(driverData.Id,driverData.Password)
+				if success{
+					http.Redirect(w, r, "/driver", http.StatusFound)
+				}else{
+					http.Redirect(w, r, "/error", http.StatusFound)
+				}
 			}
 
 		}
@@ -430,22 +446,20 @@ func driverEditDetails(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
 		} else {
-			fmt.Println( response.StatusCode)
-			data, _ := ioutil.ReadAll(response.Body)
 			if response.StatusCode != http.StatusOK{
-				// display alert msg
-				_=string(data)
+				http.Redirect(w, r, "/error",http.StatusFound)
 			}else{
-				driverUpdateCookie(driver.Id,driver.Password)
-
-				http.Redirect(w, r, "/driver", http.StatusFound)
+				success := driverUpdateCookie(driverData.Id,driverData.Password)
+				if success{
+					http.Redirect(w, r, "/driver", http.StatusFound)
+				}else{
+					http.Redirect(w, r, "/error", http.StatusFound)
+				}
 			}
 		}
 
 	}
 }
-
-
 
 func driverDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	request, _ := http.NewRequest(http.MethodDelete,
@@ -453,16 +467,12 @@ func driverDeleteAccount(w http.ResponseWriter, r *http.Request) {
 
     client := &http.Client{}
     response, err := client.Do(request)
-
 	
     if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
     } else {
-		data, _ := ioutil.ReadAll(response.Body)
 		if response.StatusCode != http.StatusOK{
-			// display alert msg
-			_=string(data)
-			http.Redirect(w, r, "/driver", http.StatusFound)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		}else{
 			http.Redirect(w, r, "/driverLogin", http.StatusOK)
 		}
@@ -475,6 +485,7 @@ func driverDeleteAccount(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", homePage)
+	router.HandleFunc("/error", errorPage)
 
 	// routes for passenger
 	router.HandleFunc("/passengerLogin", passengerLogin)

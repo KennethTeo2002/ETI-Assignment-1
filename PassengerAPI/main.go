@@ -52,9 +52,6 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-
-	
-
 	if r.Method == "GET" {
 		if !validPassword(r,db,params["passengerID"]) {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -117,7 +114,6 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 				} else {
 					// update passenger
 					EditRecord(db, newpassenger.Id, newpassenger.Firstname, newpassenger.Lastname, newpassenger.Mobilenumber, newpassenger.Email)
-
 				}
 			}
 

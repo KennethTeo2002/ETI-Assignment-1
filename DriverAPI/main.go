@@ -178,7 +178,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/driver", home)
 	router.HandleFunc("/api/v1/driver/{driverID}", driver).Methods(
-		"GET", "PUT", "POST")
+		"GET", "PUT", "POST","DELETE")
 
 	router.HandleFunc("/api/v1/drivertrip", driverTrip).Methods(
 		"GET", "PUT")
