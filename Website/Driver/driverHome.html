@@ -3,22 +3,33 @@
   <head>
     <title>Driver Home</title>
     <base href="/" />
-    <!--<link rel="stylesheet" href="css/longform.css">-->
+    <link rel="stylesheet" href="css/general.css" />
   </head>
   <body>
     <h1>Welcome {{.Driver.Firstname}} {{.Driver.Lastname}}</h1>
-    <a href="/">Logout</a>
-    <br />
-    <a href="/driver/editDDetails">Edit details</a>
-    <a
-      href="/driver/deleteAccount"
-      class="button"
-      style="vertical-align: middle"
-      ><span>Delete account</span></a
-    >
+    <div>
+      <a href="/" class="button" style="vertical-align: middle"
+        ><span>Logout</span>
+      </a>
+      <a
+        href="/driver/editDDetails"
+        class="button"
+        style="vertical-align: middle"
+        ><span>Edit details</span>
+      </a>
+      <a
+        href="/driver/deleteAccount"
+        class="button"
+        style="vertical-align: middle"
+        ><span>Delete account</span>
+      </a>
+    </div>
+
     {{if .ActiveTrip.Id}}
     <h2>Active Trip</h2>
-    Request to travel from {{.ActiveTrip.PickUp}} to {{.ActiveTrip.DropOff}}
+    <h4>
+      Request to travel from {{.ActiveTrip.PickUp}} to {{.ActiveTrip.DropOff}}
+    </h4>
     <form action="/driver" method="post">
       {{if .ActiveTrip.StartTime.IsZero}}
       <input type="submit" name="start" value="Start Trip" />

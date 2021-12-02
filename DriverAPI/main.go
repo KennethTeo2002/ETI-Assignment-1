@@ -32,7 +32,6 @@ func validPassword(r *http.Request, db *sql.DB ,id string ) bool {
     v := r.URL.Query()
     if password, ok := v["password"]; ok {
 		if driver, ok := GetRecords(db, id); ok {
-			fmt.Println(password[0], driver.Password)
 			if password[0] == driver.Password {
 				return true
 			}else{

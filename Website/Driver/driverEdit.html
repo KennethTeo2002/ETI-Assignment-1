@@ -12,6 +12,16 @@
                 <form action="/driver/editDDetails" method="post">
                     <div class="user-details">
                         <div class="input-box">
+                            <span class="details">ID</span>
+                            <input
+                              type="text"
+                              placeholder="ID"
+                              name="ID"
+                              value="{{.Id}}"
+                              disabled
+                            />
+                          </div>
+                        <div class="input-box">
                             <span class="details">First Name</span>
                             <input type="text" placeholder="Enter First name" name="firstname" value="{{.Firstname}}" required/>
                         </div>

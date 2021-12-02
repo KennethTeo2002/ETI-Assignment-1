@@ -136,6 +136,7 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		} else {
 			if response.StatusCode != http.StatusOK {
 				http.Redirect(w, r, "/error", http.StatusFound)
@@ -178,6 +179,7 @@ func passengerEditDetails(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		} else {
 			if response.StatusCode != http.StatusOK {
 				http.Redirect(w, r, "/error", http.StatusFound)
@@ -248,6 +250,7 @@ func passengerDeleteAccount(w http.ResponseWriter, r *http.Request) {
 
     if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
+		http.Redirect(w, r, "/error", http.StatusFound)
     } else {
 		if response.StatusCode != http.StatusOK{
 			http.Redirect(w, r, "/error", http.StatusFound)
@@ -323,6 +326,7 @@ func driverUpdateCookie(id string, password string)bool{
 
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
+		
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
 		if response.StatusCode != http.StatusOK{
@@ -401,6 +405,7 @@ func driverSignup(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		} else {
 			if response.StatusCode != http.StatusOK{
 				http.Redirect(w, r, "/error", http.StatusFound)
@@ -445,6 +450,7 @@ func driverEditDetails(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			fmt.Printf("The HTTP request failed with error %s\n", err)
+			http.Redirect(w, r, "/error", http.StatusFound)
 		} else {
 			if response.StatusCode != http.StatusOK{
 				http.Redirect(w, r, "/error",http.StatusFound)
@@ -470,6 +476,7 @@ func driverDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	
     if err != nil {
         fmt.Printf("The HTTP request failed with error %s\n", err)
+		http.Redirect(w, r, "/error", http.StatusFound)
     } else {
 		if response.StatusCode != http.StatusOK{
 			http.Redirect(w, r, "/error", http.StatusFound)

@@ -1,5 +1,5 @@
 -- CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
--- GRANT ALL ON *.* TO 'user'@'localhost'
+-- GRANT ALL ON *.* TO 'user'@'localhost';
 -- CREATE database driver_db;
 -- DROP database driver_db;
 USE driver_db;
