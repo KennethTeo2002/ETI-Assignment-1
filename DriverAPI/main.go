@@ -75,6 +75,11 @@ func driver(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	if r.Method == "DELETE" {
+		if !validPassword(r,db,params["passengerID"]) {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("401 - Invalid credentials"))
+			return
+		}
         w.WriteHeader(http.StatusForbidden)
         w.Write([]byte("Unable to delete due to auditing reasons"))
     }

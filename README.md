@@ -17,7 +17,42 @@ After several iterations, the final architecture diagram i settled on is
 
 ![Initial Design](design2.png?raw=true "Title")
 
-In both the passenger and driver APIs, I have a function that takes in their ID as a parameter and their password as a URL query. This function uses all 4 methods (GET, POST, PUT, DELETE) to manipulate their account record information. For the trip API, since passenger and driver require the GET method, I decided to split both of them up into 2 functions. Thus, the trippassenger function with the GET and POST methods are used by the passenger to retrieve their trip history and book a trip. Whereas the tripdriver function with the GET and PUT methods are used by the driver to retrieve their allocated trip and modify the trip record with start and end time.
+### Passenger
+
+| API Action                   | API Command                    |
+| ---------------------------- | ------------------------------ |
+| Get passenger information    | `GET /api/v1/passenger/:id`    |
+| Add new passenger            | `POST /api/v1/passenger/:id`   |
+| Update passenger information | `PUT /api/v1/passenger/:id`    |
+| Delete passenger             | `DELETE /api/v1/passenger/:id` |
+
+The Passenger microservice uses all 4 methods available in 1 function. This function would take in the passenger's id as a parameter, as well as their password key as a URL query. The password variable cannot be set as a parameter, as for the POST method, since the user currently do not have an account, there would not be any records to refer to, thus the password query is not supplied. Whereas for the GET, PUT and DELETE methods, the API would read and validate the user before performing their respective actions.
+
+### Driver
+
+| API Action                   | API Command                 |
+| ---------------------------- | --------------------------- |
+| Get driver information       | `GET /api/v1/driver/:id`    |
+| Add new driver               | `POST /api/v1/driver/:id`   |
+| Update driver information    | `PUT /api/v1/driver/:id`    |
+| Delete driver                | `DELETE /api/v1/driver/:id` |
+| Get available driver         | `GET /api/v1/drivertrip`    |
+| Update driver's availability | `PUT /api/v1/drivertrip`    |
+
+The Driver microservice uses 2 functions, `.../driver` is the base function for the user's account, whereas `.../drivertrip` is the function used by the trip API to assign drivers. The base function uses all 4 methods available, as works the same way as the passenger API. The other function only uses the GET and PUT methods, and is only connected and called by the trip API. The GET function searches the database for an available driver, set their availability to 'not available' and returns their ID back to the trip API. The PUT function takes in the driver json object, set the driver's availability back to 'available'.
+
+### Trip
+
+| API Action                               | API Command                       |
+| ---------------------------------------- | --------------------------------- |
+| Get passenger's trip history             | `GET /api/v1/trip/passenger/:id`  |
+| Request new trip                         | `POST /api/v1/trip/passenger/:id` |
+| Get driver's active trip                 | `GET /api/v1/trip/driver/:id`     |
+| Update trip timing & driver availability | `PUT /api/v1/trip/driver/:id`     |
+
+The trip microservice uses 2 functions, `.../passenger/:id` is the function for passengers, whereas `.../driver/:id` is the function for drivers. The passenger function only uses the GET and POST methods, the GET functionality retrieves and return all trip records in descending order when it is called by the passenger entering the 'view trip history' page. The POST method is invoked when a passenger submit a request for a trip. Firstly, this method would call the driver API to get an available driver, and set the trip's allocated driver to the driver id and posting the trip to the database.
+
+The driver function only uses the GET and PUT methods, the GET functionality checks if there is any active trip under the driver that does not have an end time, and returns it. The PUT method is triggered when the driver clicks on the 'Start trip' or 'End trip' button, which would update the respective database column with the current time. If the call was to end the trip, a call is also sent to the driver API to set the availabilty back to 'available'.
 
 ## Instructions for setting up and running your microservices
 
