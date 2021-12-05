@@ -6,14 +6,20 @@ This respository contains the source code for my ETI assignment 1 project. This 
 
 ## Design consideration of microservices
 
-<ins>Initial design</ins>
+For this project, I would be implementing 1 web application, 3 microservices APIs and 3 databases.
+
+After considering the different frontend implementation methods, such as React, I decided to just use Go's built-in library, html/template to serve html pages as it is the simpliest and gets the job done. This webpages is the main interface which users interact with to call the APIs.
+
+For the backend, I decided to implement 3 different microservices (Passenger, Driver & Trip) which would be connected to their own respective database. These microservices are hosted on different ports, making them independent of one another.
+
+<ins>Initial design draft</ins>
 
 ![Initial Design](design1.png?raw=true "Title")
 During the first draft of my microservice design, I was planning to have the client webapp only able to directly interact with the passenger and driver APIs. And when the user is attempting to post or update a trip, the client would sent a call to their respective user APIs which would then forward the call to the Trip API, making it an indirect connection. However, after completing the passenger API, I realised that all 4 methods of the passenger function was used, which means I would need to create a new function just to forward the call. This was redundant as the trip information needed from passenger was only the ID, making the rerouting not efficient, so I decided that the client webapp should connect to the trip API directly.
 
 ## Architecture diagram
 
-After several iterations, the final architecture diagram i settled on is
+After several iterations, the final architecture diagram I settled on is
 
 ![Initial Design](design2.png?raw=true "Title")
 
