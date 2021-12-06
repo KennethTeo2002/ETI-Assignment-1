@@ -131,7 +131,7 @@ func passengerSignup(w http.ResponseWriter, r *http.Request) {
 
 		passengerToAdd, _ := json.Marshal(passengerData)
 
-		response, err := http.Post(url+"/"+passengerData.Id+ "?password=" + passengerData.Password,
+		response, err := http.Post(url+"/"+passengerData.Id,
 			"application/json", bytes.NewBuffer(passengerToAdd))
 
 		if err != nil {
