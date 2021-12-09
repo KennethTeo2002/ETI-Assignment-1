@@ -107,6 +107,12 @@ func tripPassenger(w http.ResponseWriter, r *http.Request) {
 						tripdetails.DriverID = string(data)
 						InsertRecord(db, tripdetails.CustID, tripdetails.DriverID, tripdetails.PickUp, tripdetails.DropOff)
 
+					}else{
+						w.WriteHeader(
+							http.StatusUnprocessableEntity)
+						w.Write([]byte(
+							"422 - No available driver "))
+						return
 					}
 
 				}
