@@ -15,6 +15,7 @@ For the backend, I decided to implement 3 different microservices (Passenger, Dr
 <ins>Initial design draft</ins>
 
 ![Initial Design](design1.png?raw=true "Title")
+
 During the first draft of my microservice design, I was planning to have the client webapp only able to directly interact with the passenger and driver APIs. And when the user is attempting to post or update a trip, the client would sent a call to their respective user APIs which would then forward the call to the Trip API, making it an indirect connection. However, after completing the passenger API, I realised that all 4 methods of the passenger function was used, which means I would need to create a new function just to forward the call. This was redundant as the trip information needed from passenger was only the ID, making the rerouting not efficient, so I decided that the client webapp should connect to the trip API directly.
 
 ## Architecture diagram
