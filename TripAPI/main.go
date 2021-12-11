@@ -36,31 +36,13 @@ type driverInfo struct {
 	Driving        bool
 }
 
-/*
-func validKey(r *http.Request) bool {
-	v := r.URL.Query()
-	if key, ok := v["key"]; ok {
-		if key[0] == "2c78afaf-97da-4816-bbee-9ad239abb296" {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		return false
-	}
-}
-*/
 
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Trip REST API!")
 }
 
 func tripPassenger(w http.ResponseWriter, r *http.Request) {
-	// if !validKey(r) {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	w.Write([]byte("401 - Invalid key"))
-	// 	return
-	// }
+	
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db?parseTime=true")
 	// handle error
 	if err != nil {

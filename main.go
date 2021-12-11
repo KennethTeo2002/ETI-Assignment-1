@@ -268,6 +268,7 @@ func driverHome(w http.ResponseWriter, r *http.Request) {
 			Driver:     driver,
 			ActiveTrip: activeTrip,
 		}
+		
 		tmpl := template.Must(template.ParseFiles("Website/Driver/driverHome.html"))
 
 		tmpl.Execute(w, pageData)

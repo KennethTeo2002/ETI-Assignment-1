@@ -56,7 +56,6 @@ func driver(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	
 
 	if r.Method == "GET" {
 		if !validPassword(r,db,params["driverID"]) {
@@ -75,13 +74,13 @@ func driver(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	if r.Method == "DELETE" {
-		if !validPassword(r,db,params["passengerID"]) {
+		if !validPassword(r,db,params["driverID"]) {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 - Invalid credentials"))
 			return
 		}
         w.WriteHeader(http.StatusForbidden)
-        w.Write([]byte("Unable to delete due to auditing reasons"))
+        w.Write([]byte("403 - Unable to delete due to auditing reasons"))
     }
 
 	if r.Header.Get("Content-type") == "application/json" {
@@ -89,27 +88,26 @@ func driver(w http.ResponseWriter, r *http.Request) {
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err == nil {
 			json.Unmarshal(reqBody, &newdriver)
-			// Check if JSON missing any values
 
-			// POST is for creating new passenger
+			// POST is for creating new driver
 			if r.Method == "POST" {
 				missingValues := newdriver.Firstname == "" || newdriver.Lastname == "" || newdriver.Mobilenumber == "" || newdriver.Email == "" || newdriver.Identification == "" || newdriver.CarLicense == ""
 				if missingValues {
 					w.WriteHeader(
 						http.StatusUnprocessableEntity)
 					w.Write([]byte(
-						"422 - Missing passenger information "))
+						"422 - Missing driver information "))
 					return
 				}
-				// check if course exists; add only if
-				// course does not exist
+				// check if driver exists; add only if
+				// driver does not exist
 				if _, ok := GetRecords(db, params["driverID"]); !ok {
 					InsertRecord(db, newdriver.Id, newdriver.Password, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.Identification, newdriver.CarLicense)
 
 				} else {
 					w.WriteHeader(http.StatusConflict)
 					w.Write([]byte(
-						"409 - Duplicate passenger ID"))
+						"409 - Duplicate driver ID"))
 				}
 			}
 			//---PUT is for creating or updating
@@ -125,20 +123,19 @@ func driver(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(
 						http.StatusUnprocessableEntity)
 					w.Write([]byte(
-						"422 - Missing passenger information "))
+						"422 - Missing driver information "))
 					return
 				}
 
 				// update passenger
-
 				EditRecord(db, newdriver.Id, newdriver.Firstname, newdriver.Lastname, newdriver.Mobilenumber, newdriver.Email, newdriver.CarLicense)
-
+				
 			}
 
 		} else {
 			w.WriteHeader(
 				http.StatusUnprocessableEntity)
-			w.Write([]byte("422 - Please supply passenger information " +
+			w.Write([]byte("422 - Please supply driver information " +
 				"in JSON format"))
 		}
 
@@ -152,7 +149,6 @@ func driverTrip(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	// params := mux.Vars(r)
 
 	if r.Method == "GET" {
 		if driver, ok := GetAvailableDriver(db); ok {
@@ -160,7 +156,7 @@ func driverTrip(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(driver.Id))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(""))
+			w.Write([]byte("404 - No available driver"))
 		}
 	}
 
