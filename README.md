@@ -67,8 +67,34 @@ The driver function only uses the GET and PUT methods, the GET functionality che
 
 To set up the 3 MySQL databases, connect `fullSetup.sql` from the Database directory to a instance of MySQL, and run the file.
 
+This would set up the 3 databases required for this project **(passenger_db, driver_db, trip_db)**. If you wish to set up the databases individually, you can also run their respective sql files within the "individual setup script" folder.
+
 ### Running the microservices
 
-To start the client side application, run `go run main.go` within the main root directory.
+In order to run the full project, 4 command prompts is required.
 
-To start the microservices, navigate to the respective API folders (PassengerAPI, DriverAPI, TripAPI) and run `go run main.go databaseFunctions.go`
+In the first console, in order to start the client side application, run the following command.
+
+```console
+go run main.go
+```
+
+In the other 3 command prompts, in order to start the microservices, navigate to the respective API folders (PassengerAPI, DriverAPI, TripAPI) and run the 2 files found inside.
+
+Running Passenger API
+
+```console
+cd PassengerAPI && go run main.go databaseFunctions.go
+```
+
+Running Driver API
+
+```console
+cd DriverAPI && go run main.go databaseFunctions.go
+```
+
+Running Trip API
+
+```console
+cd TripAPI && go run main.go databaseFunctions.go
+```

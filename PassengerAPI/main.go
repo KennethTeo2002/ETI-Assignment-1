@@ -73,7 +73,7 @@ func passenger(w http.ResponseWriter, r *http.Request) {
 			return
 		}
         w.WriteHeader(http.StatusForbidden)
-        w.Write([]byte("Unable to delete due to auditing reasons"))
+        w.Write([]byte("403 - Unable to delete due to auditing reasons"))
     }
 
 
